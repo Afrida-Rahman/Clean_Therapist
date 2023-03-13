@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.mmh.clean_therapist.android.R
+import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.component.MediumButton
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Assessment
 import org.mmh.clean_therapist.android.ui.theme.*

@@ -8,14 +8,19 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import org.mmh.clean_therapist.android.core.util.Urls
 import org.mmh.clean_therapist.android.feature_authentication.data.data_source.PatientDatabase
 import org.mmh.clean_therapist.android.feature_authentication.data.repository.LocalPatientRepositoryImpl
 import org.mmh.clean_therapist.android.feature_authentication.domain.repository.LocalPatientRepository
 import org.mmh.clean_therapist.android.feature_authentication.domain.repository.RemotePatientRepository
 import org.mmh.clean_therapist.android.feature_authentication.domain.usecase.*
+import org.mmh.clean_therapist.android.feature_exercise.domain.repository.RemoteAssessmentRepository
+import org.mmh.clean_therapist.android.feature_exercise.domain.repository.RemoteExerciseTrackingRepository
+import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -66,6 +71,46 @@ object AppModule {
             insertPatient = InsertPatient(repositoryPatientRepository),
             deletePatient = DeletePatient(repositoryPatientRepository),
             patientInformation = PatientInformation(remote)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun providesRemoteExerciseTrackingRepository(): RemoteExerciseTrackingRepository {
+        return Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl("https://api.injurycloud.com")
+            .build()
+            .create(RemoteExerciseTrackingRepository::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providesRemoteAssessmentRepository(): RemoteAssessmentRepository {
+        val client = OkHttpClient.Builder()
+            .connectTimeout(3, TimeUnit.MINUTES)
+            .readTimeout(2, TimeUnit.MINUTES)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+        return Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(Urls.get("emma"))
+            .client(client)
+            .build()
+            .create(RemoteAssessmentRepository::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providesExerciseUseCases(
+        remoteAssessmentRepository: RemoteAssessmentRepository,
+        remoteExerciseTrackingRepository: RemoteExerciseTrackingRepository
+    ): ExerciseUseCases {
+        return ExerciseUseCases(
+            fetchAssessments = FetchAssessments(repository = remoteAssessmentRepository),
+            fetchExercises = FetchExercises(repository = remoteAssessmentRepository),
+            fetchExerciseConstraints = FetchExerciseConstraints(repository = remoteAssessmentRepository),
+            saveExerciseData = SaveExerciseData(repository = remoteExerciseTrackingRepository)
         )
     }
 }

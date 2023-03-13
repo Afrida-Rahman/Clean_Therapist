@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.mmh.clean_therapist.android.R
+import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.component.OutlineInputTextField
 import org.mmh.clean_therapist.android.core.component.PrimaryLargeButton
 import org.mmh.clean_therapist.android.ui.theme.EmmaVirtualTherapistTheme

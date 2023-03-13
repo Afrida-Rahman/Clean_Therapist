@@ -3,6 +3,7 @@ package org.mmh.clean_therapist.android.core.util
 import android.content.SharedPreferences
 import org.mmh.clean_therapist.android.core.model.Point
 import org.mmh.clean_therapist.android.feature_authentication.domain.model.Patient
+import java.util.*
 import kotlin.math.acos
 import kotlin.math.sqrt
 
@@ -42,6 +43,14 @@ object Utilities {
             }
             return angleValue.toFloat()
         }
+    }
+
+    fun currentDate(): String {
+        val currentDate = Calendar.getInstance()
+        val day = currentDate.get(Calendar.DATE)
+        val month = currentDate.get(Calendar.MONTH)
+        val year = currentDate.get(Calendar.YEAR)
+        return "$month/$day/$year"
     }
 
     fun getPatient(preferences: SharedPreferences): Patient {

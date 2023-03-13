@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import org.mmh.clean_therapist.android.R
+import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.ui.theme.EmmaVirtualTherapistTheme
 
 @Composable

@@ -9,6 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.mmh.clean_therapist.android.core.util.AUTHENTICATION_ROUTE
 import org.mmh.clean_therapist.android.core.util.ROOT_ROUTE
 import org.mmh.clean_therapist.android.feature_authentication.presentation.authenticationNav
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseNav
 import org.mmh.clean_therapist.android.ui.theme.EmmaVirtualTherapistTheme
 
 @AndroidEntryPoint
@@ -25,6 +26,7 @@ class MainActivity : ComponentActivity() {
                     route = ROOT_ROUTE
                 ) {
                     authenticationNav(navController = navController)
+                    exerciseNav(navController = navController)
                 }
             }
         }

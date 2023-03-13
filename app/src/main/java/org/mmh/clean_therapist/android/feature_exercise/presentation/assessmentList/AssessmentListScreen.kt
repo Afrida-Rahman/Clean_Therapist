@@ -2,6 +2,7 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.assessment
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -16,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import org.mmh.clean_therapist.android.R
+import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.UIEvent
 import org.mmh.clean_therapist.android.core.component.BottomNavigationBar
 import org.mmh.clean_therapist.android.core.component.CustomTopAppBar
@@ -26,6 +27,7 @@ import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewM
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.component.AssessmentCard
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.component.AssessmentFilter
 
+@ExperimentalFoundationApi
 @Composable
 fun AssessmentListScreen(
     navController: NavController,
