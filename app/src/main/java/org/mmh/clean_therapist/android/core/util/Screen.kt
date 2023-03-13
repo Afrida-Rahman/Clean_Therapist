@@ -2,6 +2,7 @@ package org.mmh.clean_therapist.android.core.util
 
 const val ROOT_ROUTE = "root"
 const val AUTHENTICATION_ROUTE = "authentication"
+const val EXERCISE_ROUTE = "exercise"
 
 sealed class Screen(val route: String) {
     object SplashScreen : Screen("splash_screen")

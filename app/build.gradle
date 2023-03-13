@@ -95,4 +95,8 @@ dependencies {
     // Gson
     implementation "com.google.code.gson:gson:2.9.0"
 
+    // Coil
+    implementation "io.coil-kt:coil-compose:1.4.0"
+    implementation "io.coil-kt:coil-gif:1.4.0"
+
 }
