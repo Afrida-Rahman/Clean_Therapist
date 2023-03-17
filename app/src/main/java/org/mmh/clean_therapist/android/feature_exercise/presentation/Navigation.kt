@@ -8,6 +8,7 @@ import org.mmh.clean_therapist.android.core.util.EXERCISE_ROUTE
 import org.mmh.clean_therapist.android.core.util.Screen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.AssessmentListScreen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.ExerciseListScreen
+import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.GuidelineScreen
 
 @OptIn(ExperimentalFoundationApi::class)
 fun NavGraphBuilder.exerciseNav(navController: NavController) {
@@ -42,6 +43,57 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                             navController = navController,
                             commonViewModel = commonViewModel
                         )
+                    }
+                }
+            }
+        }
+        composable(
+            route = Screen.GuidelineScreen.route + "/{testId}/{exerciseId}",
+            arguments = listOf(
+                navArgument(name = "testId") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "exerciseId") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            it.arguments?.getString("testId")?.also { testId ->
+                it.arguments?.getInt("exerciseId")?.let { exerciseId ->
+                    GuidelineScreen(
+                        testId = testId,
+                        exerciseId = exerciseId,
+                        navController = navController,
+                        commonViewModel = commonViewModel
+                    )
+                }
+            }
+        }
+        composable(
+            route = Screen.ExerciseScreen.route + "/{tenant}/{testId}/{exerciseId}",
+            arguments = listOf(
+                navArgument(name = "tenant") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "testId") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "exerciseId") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            it.arguments?.getString("tenant")?.let { tenant ->
+                it.arguments?.getString("testId")?.let { testId ->
+                    it.arguments?.getInt("exerciseId")?.let { exerciseId ->
+//                        ExerciseScreen(
+//                            tenant = tenant,
+//                            testId = testId,
+//                            exerciseId = exerciseId,
+//                            navController = navController,
+//                            viewModel = viewModel
+//                        )
+
                     }
                 }
             }
