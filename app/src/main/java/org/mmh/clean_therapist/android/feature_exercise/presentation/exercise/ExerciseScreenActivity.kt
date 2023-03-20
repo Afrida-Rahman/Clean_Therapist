@@ -14,6 +14,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.google.mlkit.common.MlKitException
 import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.PoseDetectorProcessor
@@ -21,7 +22,8 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_k
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.PreferenceUtils
 
-class ExerciseScreenActivity : AppCompatActivity(), CompoundButton.OnCheckedChangeListener {
+class ExerciseScreenActivity :
+    AppCompatActivity(), CompoundButton.OnCheckedChangeListener {
 
     private var previewView: PreviewView? = null
     private var graphicOverlay: GraphicOverlay? = null
@@ -37,6 +39,9 @@ class ExerciseScreenActivity : AppCompatActivity(), CompoundButton.OnCheckedChan
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (getSupportActionBar() != null) {
+            getSupportActionBar()?.hide();
+        }
         if (!allRuntimePermissionsGranted()) {
             getRuntimePermissions()
         }
@@ -52,6 +57,17 @@ class ExerciseScreenActivity : AppCompatActivity(), CompoundButton.OnCheckedChan
         }
         val facingSwitch = findViewById<ToggleButton>(R.id.facing_switch)
         facingSwitch.setOnCheckedChangeListener(this)
+        ViewModelProvider(
+            this,
+            ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+        )[ExerciseViewModel::class.java]
+            .processCameraProvider
+            .observe(
+                this
+            ) { provider: ProcessCameraProvider? ->
+                cameraProvider = provider
+                bindAllCameraUseCases()
+            }
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
