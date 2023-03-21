@@ -1,8 +1,10 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.posedetector
 
+import android.content.ContentValues.TAG
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import com.google.common.primitives.Ints
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseLandmark

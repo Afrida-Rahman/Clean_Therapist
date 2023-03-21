@@ -1,5 +1,6 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.posedetector
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.tasks.Task
@@ -46,6 +47,8 @@ class PoseDetectorProcessor(
             ) { task ->
                 val pose = task.result
                 val classificationResult: List<String> = ArrayList()
+                Log.d(TAG, "detectInImage: $classificationResult")
+                Log.d(TAG, "allPoseLandmarks: ${pose.allPoseLandmarks}")
                 PoseWithClassification(pose, classificationResult)
             }
     }
