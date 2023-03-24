@@ -101,7 +101,11 @@ class PoseGraphic(
                         _color = Color.rgb(170, 255, 0)
                     )
                 } else {
-                    draw.line(startPoint, endPoint, _color = Color.rgb(170, 255, 0))
+                    draw.line(
+                        Point(translateX(startPoint.x),
+                            translateY(startPoint.y)),
+                        Point(translateX(endPoint.x),
+                            translateY(endPoint.y)), _color = Color.rgb(170, 255, 0))
                 }
             }
         }
