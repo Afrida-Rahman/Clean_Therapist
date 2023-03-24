@@ -55,7 +55,7 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
 
     /**
      * Base class for a custom graphics object to be rendered within the graphic overlay. Subclass
-     * this and implement the [Graphic.draw] method to define the graphics element. Add
+     * this and implement the [Graphic.drawBodyKeyPoints] method to define the graphics element. Add
      * instances to the overlay using [GraphicOverlay.add].
      */
     abstract class Graphic(private val overlay: GraphicOverlay) {
@@ -72,7 +72,7 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
          *
          * @param canvas drawing canvas
          */
-        abstract fun draw(canvas: Canvas)
+        abstract fun drawBodyKeyPoints(canvas: Canvas)
 
         /**
          * Adjusts the supplied value from the image scale to the view scale.
@@ -177,7 +177,7 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
         synchronized(lock) {
             updateTransformationIfNeeded()
             for (graphic in graphics) {
-                graphic.draw(canvas)
+                graphic.drawBodyKeyPoints(canvas)
             }
         }
     }

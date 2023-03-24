@@ -126,6 +126,15 @@ dependencies {
     implementation "io.coil-kt:coil-compose:1.4.0"
     implementation "io.coil-kt:coil-gif:1.4.0"
 
+    // Flow layout
+    def flow_layout_version = "0.24.9-beta"
+    implementation "com.google.accompanist:accompanist-flowlayout:${flow_layout_version}"
+
+    //Tensorflow
+    implementation 'org.tensorflow:tensorflow-lite:2.5.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.5.0'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.2.0'
+
     //ML-Kit
     implementation 'com.google.mlkit:pose-detection-accurate:18.0.0-beta2'
 

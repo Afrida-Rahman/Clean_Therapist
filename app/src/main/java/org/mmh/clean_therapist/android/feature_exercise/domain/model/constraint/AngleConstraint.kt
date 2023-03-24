@@ -30,7 +30,7 @@ data class AngleConstraint(
             middlePoint = middlePoint,
             endPoint = endPoint,
             lineType = lineStyle,
-            clockwise = isClockwise
+            _clockWise = isClockwise
         )
         draw.circle(startPoint, 4f, startPoint, 360f)
         draw.circle(middlePoint, 4f, middlePoint, 360f)

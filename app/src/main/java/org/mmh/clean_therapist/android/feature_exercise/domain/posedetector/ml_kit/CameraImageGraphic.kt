@@ -7,7 +7,7 @@ import android.graphics.Canvas
 class CameraImageGraphic(overlay: GraphicOverlay, private val bitmap: Bitmap) :
     GraphicOverlay.Graphic(overlay) {
 
-    override fun draw(canvas: Canvas) {
+    override fun drawBodyKeyPoints(canvas: Canvas) {
         canvas.drawBitmap(bitmap, getTransformationMatrix(), null)
     }
 }

@@ -11,7 +11,7 @@ import com.google.mlkit.vision.pose.PoseDetector
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionProcessorBase
-import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.Utilities
+import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -48,8 +48,6 @@ class PoseDetectorProcessor(
             ) { task ->
                 val pose = task.result
                 val classificationResult: List<String> = ArrayList()
-                val person = Utilities.landmarkToPerson(pose)
-                Log.d(TAG, "person: $person")
                 PoseWithClassification(pose, classificationResult)
             }
     }

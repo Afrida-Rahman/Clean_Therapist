@@ -1,6 +1,7 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.model
 
 import android.graphics.PointF
+import org.mmh.clean_therapist.android.core.model.Point
 
 data class KeyPoint(
     val bodyPart: BodyPart,

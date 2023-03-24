@@ -7,7 +7,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.BodyPart
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.KeyPoint
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
 
-object Utilities {
+object VisualUtils {
     fun landmarkToPerson(
         pose: Pose
     ): Person {
@@ -30,13 +30,13 @@ object Utilities {
         val leftAnkle = pose.getPoseLandmark(PoseLandmark.LEFT_ANKLE)
         val rightAnkle = pose.getPoseLandmark(PoseLandmark.RIGHT_ANKLE)
 
-        val midShoulder_x = (leftShoulder!!.position.x + rightShoulder!!.position.x)/2
-        val midShoulder_y = (leftShoulder!!.position.y + rightShoulder!!.position.y)/2
-        val midShoulder_score = (leftShoulder!!.inFrameLikelihood + rightShoulder!!.inFrameLikelihood)/2
+        val midShoulderX = (leftShoulder!!.position.x + rightShoulder!!.position.x)/2
+        val midShoulderY = (leftShoulder!!.position.y + rightShoulder!!.position.y)/2
+        val midShoulderScore = (leftShoulder!!.inFrameLikelihood + rightShoulder!!.inFrameLikelihood)/2
 
-        val midHip_x = (leftHip!!.position.x + rightHip!!.position.x)/2
-        val midHip_y = (leftHip!!.position.y + rightHip!!.position.y)/2
-        val midHip_score = (leftHip!!.inFrameLikelihood + rightHip!!.inFrameLikelihood)/2
+        val midHipX = (leftHip!!.position.x + rightHip!!.position.x)/2
+        val midHipY = (leftHip!!.position.y + rightHip!!.position.y)/2
+        val midHipScore = (leftHip!!.inFrameLikelihood + rightHip!!.inFrameLikelihood)/2
 
         var keyPoints: List<KeyPoint> = listOf(
             KeyPoint(BodyPart.NOSE, nose!!.position, nose.inFrameLikelihood),
@@ -56,18 +56,16 @@ object Utilities {
             KeyPoint(BodyPart.RIGHT_KNEE, rightKnee!!.position, rightKnee.inFrameLikelihood),
             KeyPoint(BodyPart.LEFT_ANKLE, leftAnkle!!.position, leftAnkle.inFrameLikelihood),
             KeyPoint(BodyPart.RIGHT_ANKLE, rightAnkle!!.position, rightAnkle.inFrameLikelihood),
-            KeyPoint(BodyPart.MID_SHOULDER, PointF(midShoulder_x, midShoulder_y), midShoulder_score),
-            KeyPoint(BodyPart.MID_HIP, PointF(midHip_x, midHip_y), midHip_score)
+            KeyPoint(BodyPart.MID_SHOULDER, PointF(midShoulderX, midShoulderY), midShoulderScore),
+            KeyPoint(BodyPart.MID_HIP, PointF(midHipX, midHipY), midHipScore)
         )
 
-        var max_score = 0f;
+        var maxScore = 0f;
         for (keypoint in keyPoints) {
-            if (keypoint.score > max_score)
-                max_score = keypoint.score
+            if (keypoint.score > maxScore)
+                maxScore = keypoint.score
         }
 
-        val person = Person(keyPoints, max_score)
-
-        return person
+        return Person(keyPoints, maxScore)
     }
 }
