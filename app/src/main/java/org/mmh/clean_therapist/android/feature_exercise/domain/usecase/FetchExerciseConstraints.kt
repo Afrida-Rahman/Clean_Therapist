@@ -1,5 +1,6 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.usecase
 
+import android.util.Log
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.data.dto.toPhaseList
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
@@ -27,6 +28,7 @@ class FetchExerciseConstraints @Inject constructor(
                 )
             )
             emit(
+
                 Resource.Success(
                     exercisePhaseDto.toPhaseList()
                 )

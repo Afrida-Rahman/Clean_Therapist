@@ -6,29 +6,8 @@ import android.graphics.Matrix
 import android.util.AttributeSet
 import android.view.View
 import com.google.common.base.Preconditions
-import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay.Graphic
 
-/**
- * A view which renders a series of custom graphics to be overlayed on top of an associated preview
- * (i.e., the camera preview). The creator can add graphics objects, update the objects, and remove
- * them, triggering the appropriate drawing and invalidation within the view.
- *
- *
- * Supports scaling and mirroring of the graphics relative the camera's preview properties. The
- * idea is that detection items are expressed in terms of an image size, but need to be scaled up
- * to the full view size, and also mirrored in the case of the front-facing camera.
- *
- *
- * Associated [Graphic] items should use the following methods to convert to view
- * coordinates for the graphics that are drawn:
- *
- *
- *  1. [Graphic.scale] adjusts the size of the supplied value from the image scale
- * to the view scale.
- *  1. [Graphic.translateX] and [Graphic.translateY] adjust the
- * coordinate from the image's coordinate system to the view coordinate system.
- *
- */
+
 class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
     private val lock = Any()
@@ -50,40 +29,17 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
     // The number of vertical pixels needed to be cropped on each side to fit the image with the
     // area of overlay View after scaling.
     private var postScaleHeightOffset = 0f
-    private var isImageFlipped = false
+    var isImageFlipped = false
     private var needUpdateTransformation = true
 
-    /**
-     * Base class for a custom graphics object to be rendered within the graphic overlay. Subclass
-     * this and implement the [Graphic.drawBodyKeyPoints] method to define the graphics element. Add
-     * instances to the overlay using [GraphicOverlay.add].
-     */
     abstract class Graphic(private val overlay: GraphicOverlay) {
-        /**
-         * Draw the graphic on the supplied canvas. Drawing should use the following methods to convert
-         * to view coordinates for the graphics that are drawn:
-         *
-         *
-         *  1. [Graphic.scale] adjusts the size of the supplied value from the image
-         * scale to the view scale.
-         *  1. [Graphic.translateX] and [Graphic.translateY] adjust the
-         * coordinate from the image's coordinate system to the view coordinate system.
-         *
-         *
-         * @param canvas drawing canvas
-         */
+
         abstract fun drawBodyKeyPoints(canvas: Canvas)
 
-        /**
-         * Adjusts the supplied value from the image scale to the view scale.
-         */
-        fun scale(imagePixel: Float): Float {
+        private fun scale(imagePixel: Float): Float {
             return imagePixel * overlay.scaleFactor
         }
 
-        /**
-         * Adjusts the x coordinate from the image's coordinate system to the view coordinate system.
-         */
         fun translateX(x: Float): Float {
             return if (overlay.isImageFlipped) {
                 overlay.width - (scale(x) - overlay.postScaleWidthOffset)
@@ -92,45 +48,24 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
             }
         }
 
-        /**
-         * Adjusts the y coordinate from the image's coordinate system to the view coordinate system.
-         */
         fun translateY(y: Float): Float {
             return scale(y) - overlay.postScaleHeightOffset
         }
 
-        /**
-         * Returns a [Matrix] for transforming from image coordinates to overlay view coordinates.
-         */
         fun getTransformationMatrix(): Matrix {
             return overlay.transformationMatrix
         }
     }
 
-    /**
-     * Removes all graphics from the overlay.
-     */
     fun clear() {
         synchronized(lock) { graphics.clear() }
         postInvalidate()
     }
 
-    /**
-     * Adds a graphic to the overlay.
-     */
     fun add(graphic: Graphic) {
         synchronized(lock) { graphics.add(graphic) }
     }
-    /** Removes a graphic from the overlay.  */
-    /**
-     * Sets the source information of the image being processed by detectors, including size and
-     * whether it is flipped, which informs how to transform image coordinates later.
-     *
-     * @param imageWidth  the width of the image sent to ML Kit detectors
-     * @param imageHeight the height of the image sent to ML Kit detectors
-     * @param isFlipped   whether the image is flipped. Should set it to true when the image is from the
-     * front camera.
-     */
+
     fun setImageSourceInfo(imageWidth: Int, imageHeight: Int, isFlipped: Boolean) {
         Preconditions.checkState(imageWidth > 0, "image width must be positive")
         Preconditions.checkState(imageHeight > 0, "image height must be positive")
@@ -169,9 +104,6 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
         needUpdateTransformation = false
     }
 
-    /**
-     * Draws the overlay with its associated graphic objects.
-     */
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         synchronized(lock) {
@@ -183,7 +115,7 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
     }
 
     init {
-        addOnLayoutChangeListener { view: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int ->
+        addOnLayoutChangeListener { _: View?, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
             needUpdateTransformation = true
         }
     }

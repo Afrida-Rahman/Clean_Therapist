@@ -122,17 +122,13 @@
                 app:layout_constraintEnd_toStartOf="@id/hold_time_display"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <ToggleButton
+                <ImageButton
                     android:id="@+id/camera_switch_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/camera_switching_button"
-                    android:drawableTop="@drawable/ic_flip_camera"
-                    android:gravity="center"
-                    android:textOff=""
-                    android:textOn=""
-                    android:textSize="0dp"
+                    android:src="@drawable/ic_flip_camera"
                     app:layout_constraintBottom_toTopOf="@id/display_holder"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -321,16 +317,5 @@
             android:paddingRight="10dp"
             app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <ToggleButton
-        android:id="@+id/facing_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:drawable="@drawable/ic_flip_camera"
-        android:textOff="Front"
-        android:textOn="Back"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
 </LinearLayout>

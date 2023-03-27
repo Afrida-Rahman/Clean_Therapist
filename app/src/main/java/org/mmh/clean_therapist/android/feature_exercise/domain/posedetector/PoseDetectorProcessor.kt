@@ -1,6 +1,5 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.posedetector
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.tasks.Task
@@ -11,7 +10,6 @@ import com.google.mlkit.vision.pose.PoseDetector
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionProcessorBase
-import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -19,16 +17,14 @@ import java.util.concurrent.Executors
 class PoseDetectorProcessor(
     context: Context,
     options: PoseDetectorOptionsBase,
-    private val showInFrameLikelihood: Boolean,
-    private val visualizeZ: Boolean,
-    private val rescaleZForVisualization: Boolean
+    private val showInFrameLikelihood: Boolean
 ) : VisionProcessorBase<PoseDetectorProcessor.PoseWithClassification>(context) {
 
     private val detector: PoseDetector
     private val classificationExecutor: Executor
 
     /** Internal class to hold Pose and classification results. */
-    class PoseWithClassification(val pose: Pose, val classificationResult: List<String>)
+    class PoseWithClassification(val pose: Pose)
 
     init {
         detector = PoseDetection.getClient(options)
@@ -47,8 +43,7 @@ class PoseDetectorProcessor(
                 classificationExecutor
             ) { task ->
                 val pose = task.result
-                val classificationResult: List<String> = ArrayList()
-                PoseWithClassification(pose, classificationResult)
+                PoseWithClassification(pose)
             }
     }
 
@@ -60,11 +55,7 @@ class PoseDetectorProcessor(
         graphicOverlay.add(
             PoseGraphic(
                 graphicOverlay,
-                results.pose,
-                showInFrameLikelihood,
-                visualizeZ,
-                rescaleZForVisualization,
-                results.classificationResult
+                results.pose
             )
         )
     }

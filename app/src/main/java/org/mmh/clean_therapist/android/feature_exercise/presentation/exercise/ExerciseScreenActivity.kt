@@ -6,14 +6,16 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.CompoundButton
+import android.view.View
+import android.widget.ImageButton
 import android.widget.Toast
-import android.widget.ToggleButton
+import androidx.activity.viewModels
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.mlkit.common.MlKitException
 import org.mmh.clean_therapist.R
@@ -21,9 +23,11 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.Pose
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.PreferenceUtils
+import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonEvent
+import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 
 class ExerciseScreenActivity :
-    AppCompatActivity(), CompoundButton.OnCheckedChangeListener {
+    AppCompatActivity(), View.OnClickListener {
 
     private var previewView: PreviewView? = null
     private var graphicOverlay: GraphicOverlay? = null
@@ -35,13 +39,22 @@ class ExerciseScreenActivity :
     private var selectedModel = POSE_DETECTION
     private var lensFacing = CameraSelector.LENS_FACING_BACK
     private var cameraSelector: CameraSelector? = null
-
+    private val commonViewModel: CommonViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (getSupportActionBar() != null) {
-            getSupportActionBar()?.hide();
+        if (supportActionBar != null) {
+            supportActionBar?.hide()
         }
+
+        val exerciseId = intent.getStringExtra("exerciseId")
+        val tenant = intent.getStringExtra("tenant")
+        val testId = intent.getIntExtra("testId", 0)
+
+        if (tenant != null && exerciseId != null) {
+            commonViewModel.fetchExerciseConstraints(exerciseId, tenant, testId)
+        }
+
         if (!allRuntimePermissionsGranted()) {
             getRuntimePermissions()
         }
@@ -55,8 +68,8 @@ class ExerciseScreenActivity :
         if (graphicOverlay == null) {
             Log.d(TAG, "graphicOverlay is null")
         }
-        val facingSwitch = findViewById<ToggleButton>(R.id.facing_switch)
-        facingSwitch.setOnCheckedChangeListener(this)
+        val facingSwitch = findViewById<ImageButton>(R.id.camera_switch_button)
+        facingSwitch.setOnClickListener(this)
         ViewModelProvider(
             this,
             ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -70,7 +83,7 @@ class ExerciseScreenActivity :
             }
     }
 
-    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
+    override fun onClick(v: View?) {
         if (cameraProvider == null) {
             return
         }
@@ -124,7 +137,7 @@ class ExerciseScreenActivity :
         }
         previewUseCase = builder.build()
         previewUseCase!!.setSurfaceProvider(previewView!!.surfaceProvider)
-        cameraProvider!!.bindToLifecycle(/* lifecycleOwner= */ this,
+        cameraProvider!!.bindToLifecycle(/* lifecycleOwner = */ this,
             cameraSelector!!,
             previewUseCase
         )
@@ -149,9 +162,7 @@ class ExerciseScreenActivity :
                         PoseDetectorProcessor(
                             context = this,
                             poseDetectorOptions,
-                            showInFrameLikelihood = true,
-                            visualizeZ = false,
-                            rescaleZForVisualization = false
+                            showInFrameLikelihood = true
                         )
                     }
                     else -> throw IllegalStateException("Invalid model name")
@@ -200,6 +211,7 @@ class ExerciseScreenActivity :
                 needUpdateGraphicOverlayImageSourceInfo = false
             }
             try {
+                Log.d(TAG, "bindAnalysisUseCase: ${commonViewModel.assessments}")
                 imageProcessor!!.processImageProxy(imageProxy, graphicOverlay)
             } catch (e: MlKitException) {
                 Log.e(TAG, "Failed to process image. Error: " + e.localizedMessage)
@@ -207,7 +219,7 @@ class ExerciseScreenActivity :
                     .show()
             }
         }
-        cameraProvider!!.bindToLifecycle(/* lifecycleOwner= */ this,
+        cameraProvider!!.bindToLifecycle(/* lifecycleOwner = */ this,
             cameraSelector!!,
             analysisUseCase
         )
