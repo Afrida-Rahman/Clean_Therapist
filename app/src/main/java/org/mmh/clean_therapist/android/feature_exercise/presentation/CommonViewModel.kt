@@ -1,6 +1,9 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation
 
+import android.content.ContentValues.TAG
 import android.content.SharedPreferences
+import android.os.Parcelable
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -220,6 +223,7 @@ class CommonViewModel @Inject constructor(
                         }
                         is Resource.Success -> {
                             it.data?.let { phases ->
+                                Log.d(TAG, "fetchExerciseConstraints: $phases")
                                 setExerciseConstraints(
                                     testId = testId,
                                     exerciseId = exerciseId,

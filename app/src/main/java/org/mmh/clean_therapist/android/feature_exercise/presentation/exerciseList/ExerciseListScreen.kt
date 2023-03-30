@@ -177,14 +177,21 @@ fun ExerciseListScreen(
                                             )
                                         },
                                         onStartWorkoutButtonClicked = {
-                                            val intent = Intent(
-                                                context,
-                                                ExerciseScreenActivity::class.java)
-                                            intent.putExtra("exerciseId", it.id.toString())
-                                            intent.putExtra("tenant", tenant)
-                                            intent.putExtra("testId", testId)
-
-                                            context.startActivity(intent)
+                                            navController.navigate(
+                                                Screen.ExerciseScreen.withArgs(
+                                                    tenant,
+                                                    testId,
+                                                    it.id.toString(),
+                                                )
+                                            )
+//                                            val intent = Intent(
+//                                                context,
+//                                                ExerciseScreenActivity::class.java)
+//                                            intent.putExtra("exerciseId", it.id.toString())
+//                                            intent.putExtra("tenant", tenant)
+//                                            intent.putExtra("testId", testId)
+//
+//                                            context.startActivity(intent)
                                         }
                                     )
                                 }

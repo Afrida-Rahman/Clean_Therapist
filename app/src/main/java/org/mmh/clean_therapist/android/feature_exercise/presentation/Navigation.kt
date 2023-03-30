@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import org.mmh.clean_therapist.android.core.util.EXERCISE_ROUTE
 import org.mmh.clean_therapist.android.core.util.Screen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.AssessmentListScreen
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.ExerciseScreen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.ExerciseListScreen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.GuidelineScreen
 
@@ -86,13 +87,13 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
             it.arguments?.getString("tenant")?.let { tenant ->
                 it.arguments?.getString("testId")?.let { testId ->
                     it.arguments?.getInt("exerciseId")?.let { exerciseId ->
-//                        ExerciseScreen(
-//                            tenant = tenant,
-//                            testId = testId,
-//                            exerciseId = exerciseId,
-//                            navController = navController,
-//                            viewModel = viewModel
-//                        )
+                        ExerciseScreen(
+                            tenant = tenant,
+                            testId = testId,
+                            exerciseId = exerciseId,
+                            navController = navController,
+                            commonViewModel = commonViewModel
+                        )
 
                     }
                 }

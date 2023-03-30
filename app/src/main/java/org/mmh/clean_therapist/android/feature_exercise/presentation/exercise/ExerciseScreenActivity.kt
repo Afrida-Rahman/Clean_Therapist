@@ -13,10 +13,12 @@ import androidx.activity.viewModels
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.ui.platform.LocalView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import com.google.mlkit.common.MlKitException
 import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.PoseDetectorProcessor
@@ -39,7 +41,6 @@ class ExerciseScreenActivity :
     private var selectedModel = POSE_DETECTION
     private var lensFacing = CameraSelector.LENS_FACING_BACK
     private var cameraSelector: CameraSelector? = null
-    private val commonViewModel: CommonViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,12 +48,16 @@ class ExerciseScreenActivity :
             supportActionBar?.hide()
         }
 
-        val exerciseId = intent.getStringExtra("exerciseId")
+        val exerciseId = intent.getIntExtra("exerciseId", 0)
         val tenant = intent.getStringExtra("tenant")
-        val testId = intent.getIntExtra("testId", 0)
+        val testId = intent.getStringExtra("testId")
 
-        if (tenant != null && exerciseId != null) {
-            commonViewModel.fetchExerciseConstraints(exerciseId, tenant, testId)
+        if (tenant != null && exerciseId != null && testId != null) {
+            ViewModelProvider(
+                this,
+                ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+            )[CommonViewModel::class.java]
+                .fetchExerciseConstraints(tenant, testId, exerciseId)
         }
 
         if (!allRuntimePermissionsGranted()) {
@@ -211,7 +216,6 @@ class ExerciseScreenActivity :
                 needUpdateGraphicOverlayImageSourceInfo = false
             }
             try {
-                Log.d(TAG, "bindAnalysisUseCase: ${commonViewModel.assessments}")
                 imageProcessor!!.processImageProxy(imageProxy, graphicOverlay)
             } catch (e: MlKitException) {
                 Log.e(TAG, "Failed to process image. Error: " + e.localizedMessage)
