@@ -3,30 +3,24 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.ui.platform.LocalView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import com.google.mlkit.common.MlKitException
 import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.PoseDetectorProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.PreferenceUtils
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonEvent
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 
 class ExerciseScreenActivity :
     AppCompatActivity(), View.OnClickListener {
@@ -51,14 +45,6 @@ class ExerciseScreenActivity :
         val exerciseId = intent.getIntExtra("exerciseId", 0)
         val tenant = intent.getStringExtra("tenant")
         val testId = intent.getStringExtra("testId")
-
-        if (tenant != null && exerciseId != null && testId != null) {
-            ViewModelProvider(
-                this,
-                ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-            )[CommonViewModel::class.java]
-                .fetchExerciseConstraints(tenant, testId, exerciseId)
-        }
 
         if (!allRuntimePermissionsGranted()) {
             getRuntimePermissions()
