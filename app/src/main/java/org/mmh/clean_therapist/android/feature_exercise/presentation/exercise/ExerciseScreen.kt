@@ -32,7 +32,7 @@ fun ExerciseScreen(
     navController: NavController,
     commonViewModel: CommonViewModel,
     viewModel: ExerciseScreenViewModel = hiltViewModel()
-){
+) {
     val context = LocalContext.current
     val application = context.applicationContext as Application
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -45,9 +45,10 @@ fun ExerciseScreen(
         }
     }
 
-    viewModel.checkAndGetPermission(context, launcher)
+    viewModel.CheckAndGetPermission(context, launcher)
 
-    viewModel.cameraSelector = CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()
+    viewModel.cameraSelector =
+        CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()
     ViewModelProvider(
         navController.getViewModelStoreOwner(navGraphId = navController.graph.id),
         ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -70,7 +71,7 @@ fun ExerciseScreen(
             viewModel.previewView = it.findViewById(R.id.preview_view)
             viewModel.graphicOverlay = it.findViewById(R.id.graphic_overlay)
             it.findViewById<ImageButton>(R.id.camera_switch_button)
-                .setOnClickListener{
+                .setOnClickListener {
                     if (viewModel.cameraProvider == null) {
                         return@setOnClickListener
                     }
@@ -80,7 +81,8 @@ fun ExerciseScreen(
                         } else {
                             CameraSelector.LENS_FACING_FRONT
                         }
-                    val newCameraSelector = CameraSelector.Builder().requireLensFacing(newLensFacing).build()
+                    val newCameraSelector =
+                        CameraSelector.Builder().requireLensFacing(newLensFacing).build()
                     try {
                         if (viewModel.cameraProvider!!.hasCamera(newCameraSelector)) {
                             viewModel.lensFacing = newLensFacing

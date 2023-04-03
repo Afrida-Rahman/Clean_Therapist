@@ -1,6 +1,7 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
@@ -27,25 +28,30 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExerciseScreenViewModel @Inject constructor() : ViewModel() {
-     var previewView: PreviewView? = null
-     var graphicOverlay: GraphicOverlay? = null
-     var cameraProvider: ProcessCameraProvider? = null
-     var previewUseCase: Preview? = null
-     var analysisUseCase: ImageAnalysis? = null
-     var imageProcessor: VisionImageProcessor? = null
-     var needUpdateGraphicOverlayImageSourceInfo = false
-     var selectedModel = POSE_DETECTION
-     var lensFacing = CameraSelector.LENS_FACING_BACK
-     var cameraSelector: CameraSelector? = null
+    @SuppressLint("StaticFieldLeak")
+    var previewView: PreviewView? = null
+
+    @SuppressLint("StaticFieldLeak")
+    var graphicOverlay: GraphicOverlay? = null
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var previewUseCase: Preview? = null
+    private var analysisUseCase: ImageAnalysis? = null
+    private var imageProcessor: VisionImageProcessor? = null
+    private var needUpdateGraphicOverlayImageSourceInfo = false
+    private var selectedModel = POSE_DETECTION
+    var lensFacing = CameraSelector.LENS_FACING_BACK
+    var cameraSelector: CameraSelector? = null
+
     @Composable
-    fun checkAndGetPermission(
+    fun CheckAndGetPermission(
         context: Context,
         launcher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
     ) {
         if (!allRuntimePermissionsGranted(context)) {
-            getRuntimePermissions(context, launcher)
+            GetRuntimePermissions(context, launcher)
         }
     }
+
     private fun allRuntimePermissionsGranted(context: Context): Boolean {
         for (permission in REQUIRED_RUNTIME_PERMISSIONS) {
             permission.let {
@@ -56,8 +62,9 @@ class ExerciseScreenViewModel @Inject constructor() : ViewModel() {
         }
         return true
     }
+
     @Composable
-    private fun getRuntimePermissions(
+    private fun GetRuntimePermissions(
         context: Context,
         launcher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
     ) {
@@ -91,7 +98,8 @@ class ExerciseScreenViewModel @Inject constructor() : ViewModel() {
         Log.i("CameraPermission", "Permission NOT granted: $permission")
         return false
     }
-     fun bindAllCameraUseCases(context: Context, lifecycleOwner: LifecycleOwner) {
+
+    fun bindAllCameraUseCases(context: Context, lifecycleOwner: LifecycleOwner) {
         if (cameraProvider != null) {
             // As required by CameraX API, unbinds all use cases before trying to re-bind any of them.
             cameraProvider!!.unbindAll()
@@ -99,6 +107,7 @@ class ExerciseScreenViewModel @Inject constructor() : ViewModel() {
             bindAnalysisUseCase(context, lifecycleOwner)
         }
     }
+
     private fun bindPreviewUseCase(context: Context, lifecycleOwner: LifecycleOwner) {
         if (cameraProvider == null) {
             return
@@ -119,6 +128,7 @@ class ExerciseScreenViewModel @Inject constructor() : ViewModel() {
             previewUseCase
         )
     }
+
     private fun bindAnalysisUseCase(context: Context, lifecycleOwner: LifecycleOwner) {
         if (cameraProvider == null) {
             return
@@ -199,7 +209,6 @@ class ExerciseScreenViewModel @Inject constructor() : ViewModel() {
     }
 
     companion object {
-        private const val PERMISSION_REQUESTS = 1
 
         private val REQUIRED_RUNTIME_PERMISSIONS =
             arrayOf(
@@ -207,9 +216,7 @@ class ExerciseScreenViewModel @Inject constructor() : ViewModel() {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE
             )
-        private const val TAG = "CameraXLivePreview"
         private const val POSE_DETECTION = "Pose Detection"
-        private const val STATE_SELECTED_MODEL = "selected_model"
     }
 
 }
