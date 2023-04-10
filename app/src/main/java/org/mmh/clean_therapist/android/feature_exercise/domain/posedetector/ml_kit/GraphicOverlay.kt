@@ -6,6 +6,7 @@ import android.graphics.Matrix
 import android.util.AttributeSet
 import android.view.View
 import com.google.common.base.Preconditions
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
 
 
 class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
@@ -30,11 +31,12 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
     // area of overlay View after scaling.
     private var postScaleHeightOffset = 0f
     var isImageFlipped = false
+    lateinit var phases: List<Phase>
     private var needUpdateTransformation = true
 
-    abstract class Graphic(private val overlay: GraphicOverlay) {
+    abstract class Graphic(val overlay: GraphicOverlay) {
 
-        abstract fun drawBodyKeyPoints(canvas: Canvas)
+        abstract fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>)
 
         private fun scale(imagePixel: Float): Float {
             return imagePixel * overlay.scaleFactor
@@ -109,7 +111,7 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
         synchronized(lock) {
             updateTransformationIfNeeded()
             for (graphic in graphics) {
-                graphic.drawBodyKeyPoints(canvas)
+                graphic.drawBodyKeyPoints(canvas, phases)
             }
         }
     }

@@ -59,19 +59,22 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                 }
             )
         ) {
-            it.arguments?.getString("testId")?.also { testId ->
-                it.arguments?.getInt("exerciseId")?.let { exerciseId ->
-                    GuidelineScreen(
-                        testId = testId,
-                        exerciseId = exerciseId,
-                        navController = navController,
-                        commonViewModel = commonViewModel
-                    )
+            it.arguments?.getString("tenant")?.let { tenant ->
+                it.arguments?.getString("testId")?.also { testId ->
+                    it.arguments?.getInt("exerciseId")?.let { exerciseId ->
+                        GuidelineScreen(
+                            tenant = tenant,
+                            testId = testId,
+                            exerciseId = exerciseId,
+                            navController = navController,
+                            commonViewModel = commonViewModel
+                        )
+                    }
                 }
             }
         }
         composable(
-            route = Screen.ExerciseScreen.route + "/{tenant}/{testId}/{exerciseId}",
+            route = Screen.ExerciseScreen.route + "/{tenant}/{testId}/{exerciseName}/{exerciseId}",
             arguments = listOf(
                 navArgument(name = "tenant") {
                     type = NavType.StringType
@@ -86,15 +89,18 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
         ) {
             it.arguments?.getString("tenant")?.let { tenant ->
                 it.arguments?.getString("testId")?.let { testId ->
-                    it.arguments?.getInt("exerciseId")?.let { exerciseId ->
-                        ExerciseScreen(
-                            tenant = tenant,
-                            testId = testId,
-                            exerciseId = exerciseId,
-                            navController = navController,
-                            commonViewModel = commonViewModel
-                        )
+                    it.arguments?.getString("exerciseName")?.let { exerciseName ->
+                        it.arguments?.getInt("exerciseId")?.let { exerciseId ->
+                            ExerciseScreen(
+                                tenant = tenant,
+                                testId = testId,
+                                exerciseName = exerciseName,
+                                exerciseId = exerciseId,
+                                navController = navController,
+                                commonViewModel = commonViewModel
+                            )
 
+                        }
                     }
                 }
             }

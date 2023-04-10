@@ -3,6 +3,7 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 import android.app.Application
 import android.view.View
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,6 +29,7 @@ import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewM
 fun ExerciseScreen(
     tenant: String,
     testId: String,
+    exerciseName: String,
     exerciseId: Int,
     navController: NavController,
     commonViewModel: CommonViewModel,
@@ -47,6 +49,8 @@ fun ExerciseScreen(
 
     viewModel.CheckAndGetPermission(context, launcher)
 
+    viewModel.fetchExerciseConstraints(tenant, exerciseId)
+
     viewModel.cameraSelector =
         CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()
     ViewModelProvider(
@@ -61,7 +65,6 @@ fun ExerciseScreen(
             viewModel.bindAllCameraUseCases(context, lifecycleOwner)
         }
 
-
     val scaffoldState = rememberScaffoldState()
     AndroidView(factory = {
         View.inflate(it, R.layout.activity_exercise_screen, null)
@@ -70,12 +73,14 @@ fun ExerciseScreen(
         update = {
             viewModel.previewView = it.findViewById(R.id.preview_view)
             viewModel.graphicOverlay = it.findViewById(R.id.graphic_overlay)
+            val exerciseNameTV:TextView = it.findViewById(R.id.exercise_name)
+            exerciseNameTV.text = exerciseName
             it.findViewById<ImageButton>(R.id.camera_switch_button)
                 .setOnClickListener {
                     if (viewModel.cameraProvider == null) {
                         return@setOnClickListener
                     }
-                    val newLensFacing =
+                    val newLensFacing: Int =
                         if (viewModel.lensFacing == CameraSelector.LENS_FACING_FRONT) {
                             CameraSelector.LENS_FACING_BACK
                         } else {
@@ -87,7 +92,7 @@ fun ExerciseScreen(
                         if (viewModel.cameraProvider!!.hasCamera(newCameraSelector)) {
                             viewModel.lensFacing = newLensFacing
                             viewModel.cameraSelector = newCameraSelector
-//                            viewModel.bindAllCameraUseCases()
+                            viewModel.bindAllCameraUseCases(context, lifecycleOwner)
                             return@setOnClickListener
                         }
                     } catch (e: CameraInfoUnavailableException) {
@@ -102,7 +107,6 @@ fun ExerciseScreen(
                 }
         }
     )
-    commonViewModel.fetchExerciseConstraints(tenant, testId, exerciseId)
     LaunchedEffect(key1 = true) {
         commonViewModel.eventFlow.collect { event ->
             when (event) {

@@ -1,7 +1,6 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.posedetector
 
 import android.content.Context
-import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.pose.Pose
@@ -51,7 +50,6 @@ class PoseDetectorProcessor(
         results: PoseWithClassification,
         graphicOverlay: GraphicOverlay
     ) {
-        Log.d("result1", "$showInFrameLikelihood")
         graphicOverlay.add(
             PoseGraphic(
                 graphicOverlay,

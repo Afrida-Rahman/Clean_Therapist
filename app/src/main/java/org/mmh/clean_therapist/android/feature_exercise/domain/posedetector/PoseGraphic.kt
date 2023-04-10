@@ -3,11 +3,13 @@ package org.mmh.clean_therapist.android.feature_exercise.domain.posedetector
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import org.mmh.clean_therapist.android.core.model.Point
+import android.graphics.PointF
 import com.google.mlkit.vision.pose.Pose
 import org.mmh.clean_therapist.android.core.util.Draw
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.BodyPart
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.Constraint
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.KeyPoint
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils
 
@@ -62,29 +64,39 @@ class PoseGraphic(
         rightPaint.color = Color.YELLOW
     }
 
-    override fun drawBodyKeyPoints(canvas: Canvas) {
+    override fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>) {
         val landmarks = pose.allPoseLandmarks
         if (landmarks.isEmpty()) {
             return
         }
         val draw = Draw(canvas, Color.WHITE, lineWidth)
-        val width = draw.canvas.width
+        draw.canvas.width
 
-        val person = VisualUtils.landmarkToPerson(pose)
+        val keyPoints: MutableList<KeyPoint> = mutableListOf()
+        for (keyPoint in VisualUtils.landmarkToPerson(pose).keyPoints) {
+            val coordinate = PointF(translateX(keyPoint.coordinate.x), translateY(keyPoint.coordinate.y))
+            keyPoints += KeyPoint(keyPoint.bodyPart, coordinate, keyPoint.score)
+        }
+        val person = Person(keyPoints, VisualUtils.landmarkToPerson(pose).score)
 
         mappings.forEach { map ->
-            var startPoint = person.keyPoints[map[0]].toCanvasPoint()
-            startPoint = Point(translateX(startPoint.x),
-                translateY(startPoint.y))
-            var endPoint = person.keyPoints[map[1]].toCanvasPoint()
-            endPoint = Point(translateX(endPoint.x),
-                translateY(endPoint.y))
+            val startPoint = person.keyPoints[map[0]].toCanvasPoint()
+            val endPoint = person.keyPoints[map[1]].toCanvasPoint()
             if (person.keyPoints[map[0]].score >= minConfidence && person.keyPoints[map[1]].score >= minConfidence) {
                 draw.line(
                     startPoint,
                     endPoint, _color = Color.rgb(170, 255, 0))
             }
         }
+
+        for (phase in phases) {
+            for (constraint in phase.constraints) {
+                constraint.draw(draw, person)
+            }
+        }
+
+
+
     }
 
     companion object {

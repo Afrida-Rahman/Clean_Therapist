@@ -1,6 +1,5 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation.guideline
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
@@ -8,21 +7,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.component.CustomTopAppBar
+import org.mmh.clean_therapist.android.core.util.Screen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
-import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.ExerciseScreenActivity
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.ImageSection
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.InstructionSection
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.VideoSection
 
 @Composable
 fun GuidelineScreen(
+    tenant: String,
     testId: String,
     exerciseId: Int,
     navController: NavController,
@@ -30,7 +29,6 @@ fun GuidelineScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val exercise = commonViewModel.getExercise(testId = testId, exerciseId = exerciseId)
-    val context = LocalContext.current
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -61,13 +59,14 @@ fun GuidelineScreen(
                 )
                 Button(onClick = {
                     navController.popBackStack()
-                    context.startActivity(
-                        Intent(
-                            context,
-                            ExerciseScreenActivity::class.java
+                    navController.navigate(
+                        Screen.ExerciseScreen.withArgs(
+                            tenant,
+                            testId,
+                            exercise.name,
+                            exercise.id.toString(),
                         )
                     )
-
                 }) {
                     Text(text = "Start Workout")
                 }

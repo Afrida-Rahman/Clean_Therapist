@@ -9,7 +9,10 @@ interface VisionImageProcessor {
     /**
      * Processes ImageProxy image data, e.g. used for CameraX live preview case.
      */
-    fun processImageProxy(image: ImageProxy?, graphicOverlay: GraphicOverlay?)
+    fun processImageProxy(
+        image: ImageProxy?,
+        graphicOverlay: GraphicOverlay?
+    )
 
     /**
      * Stops the underlying machine learning model and release resources.

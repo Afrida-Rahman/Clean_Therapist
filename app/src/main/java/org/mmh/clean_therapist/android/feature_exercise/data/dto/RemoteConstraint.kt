@@ -5,6 +5,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.Constraint
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.LineType
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.constraint.AngleConstraint
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.constraint.LineConstraint
+import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils.getIndex
 
 data class RemoteConstraint(
     @SerializedName("Scale") val scale: String,
@@ -22,10 +23,10 @@ data class RemoteConstraint(
 
 fun RemoteConstraint.toConstraint(): Constraint {
     return when (scale) {
-        "Angle" -> AngleConstraint(
-            startPointIndex = 0,
-            middlePointIndex = 0,
-            endPointIndex = 0,
+        "degree" -> AngleConstraint(
+            startPointIndex = getIndex(startKeyPosition),
+            middlePointIndex = getIndex(middleKeyPosition),
+            endPointIndex = getIndex(endKeyPosition),
             lineType = if (lineType == "solid") {
                 LineType.SOLID
             } else {
@@ -37,8 +38,8 @@ fun RemoteConstraint.toConstraint(): Constraint {
             shouldDrawExtensionFlexion = shouldDrawExtensionFlexion
         )
         else -> LineConstraint(
-            startPointIndex = 0,
-            endPointIndex = 0,
+            startPointIndex = getIndex(startKeyPosition),
+            endPointIndex = getIndex(endKeyPosition),
             lineType = if (lineType == "solid") {
                 LineType.SOLID
             } else {

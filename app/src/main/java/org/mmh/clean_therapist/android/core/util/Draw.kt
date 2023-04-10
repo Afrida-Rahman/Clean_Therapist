@@ -87,7 +87,7 @@ class Draw(
         middlePoint: Point,
         endPoint: Point,
         lineType: Paint.Style? = Paint.Style.FILL,
-        radius: Float = 50F,
+        radius: Float = 100F,
         _clockWise: Boolean = clockWise,
         color: Int = Color.WHITE
     ) {

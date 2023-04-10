@@ -4,5 +4,5 @@ import org.mmh.clean_therapist.android.core.util.Draw
 
 
 interface Constraint {
-    fun draw(draw: Draw)
+    fun draw(draw: Draw, person: Person)
 }

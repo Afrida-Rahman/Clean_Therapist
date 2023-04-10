@@ -1,13 +1,12 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.usecase
 
-import android.util.Log
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.data.dto.toPhaseList
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
 import org.mmh.clean_therapist.android.feature_exercise.domain.payload.ExerciseConstraintPayload
 import org.mmh.clean_therapist.android.feature_exercise.domain.repository.RemoteAssessmentRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
@@ -28,7 +27,6 @@ class FetchExerciseConstraints @Inject constructor(
                 )
             )
             emit(
-
                 Resource.Success(
                     exercisePhaseDto.toPhaseList()
                 )

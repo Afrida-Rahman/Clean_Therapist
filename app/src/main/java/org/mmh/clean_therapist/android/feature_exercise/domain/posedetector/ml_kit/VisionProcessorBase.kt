@@ -79,7 +79,10 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
 
     // -----------------Code for processing live preview frame from CameraX API-----------------------
     @ExperimentalGetImage
-    override fun processImageProxy(image: ImageProxy?, graphicOverlay: GraphicOverlay?) {
+    override fun processImageProxy(
+        image: ImageProxy?,
+        graphicOverlay: GraphicOverlay?
+    ) {
         if (isShutdown) {
             return
         }

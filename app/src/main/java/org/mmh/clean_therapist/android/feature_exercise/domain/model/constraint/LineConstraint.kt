@@ -5,6 +5,7 @@ import org.mmh.clean_therapist.android.core.model.Point
 import org.mmh.clean_therapist.android.core.util.Draw
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Constraint
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.LineType
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
 
 data class LineConstraint(
     val startPointIndex: Int,
@@ -13,7 +14,7 @@ data class LineConstraint(
     val minValidationValue: Int,
     val maxValidationValue: Int
 ) : Constraint {
-    override fun draw(draw: Draw) {
+    override fun draw(draw: Draw, person: Person) {
         val lineStyle = if (lineType == LineType.SOLID) {
             Paint.Style.FILL
         } else {

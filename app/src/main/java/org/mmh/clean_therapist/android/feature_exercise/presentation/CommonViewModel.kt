@@ -1,21 +1,10 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation
 
-import android.content.ContentValues.TAG
 import android.content.SharedPreferences
-import android.os.Parcelable
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.mmh.clean_therapist.android.core.Resource
-import org.mmh.clean_therapist.android.core.UIEvent
-import org.mmh.clean_therapist.android.core.util.Utilities
-import org.mmh.clean_therapist.android.feature_authentication.domain.model.Patient
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.Assessment
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
-import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.ExerciseUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,6 +13,13 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.mmh.clean_therapist.android.core.Resource
+import org.mmh.clean_therapist.android.core.UIEvent
+import org.mmh.clean_therapist.android.core.util.Utilities
+import org.mmh.clean_therapist.android.feature_authentication.domain.model.Patient
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Assessment
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
+import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.ExerciseUseCases
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,6 +31,7 @@ class CommonViewModel @Inject constructor(
 
     private val _assessments = mutableStateOf<List<Assessment>>(emptyList())
     val assessments: State<List<Assessment>> = _assessments
+
 
     private val _patient = Utilities.getPatient(preferences)
     var patient: Patient = _patient
@@ -69,11 +66,6 @@ class CommonViewModel @Inject constructor(
                 tenant = event.tenant,
                 testId = event.testId
             )
-            is CommonEvent.FetchExerciseConstraints -> fetchExerciseConstraints(
-                tenant = event.tenant,
-                testId = event.testId,
-                exerciseId = event.exerciseId
-            )
             is CommonEvent.ApplyAssessmentFilter -> {
                 _assessments.value = getAssessments(
                     searchTerm = event.testId ?: ""
@@ -97,6 +89,9 @@ class CommonViewModel @Inject constructor(
                         loggedIn = false
                     )
                 )
+            }
+            else -> {
+
             }
         }
     }
@@ -203,59 +198,11 @@ class CommonViewModel @Inject constructor(
         }
     }
 
-    fun fetchExerciseConstraints(tenant: String, testId: String, exerciseId: Int) {
-        viewModelScope.launch {
-            exerciseUseCases.fetchExerciseConstraints(tenant = tenant, exerciseId = exerciseId)
-                .onEach {
-                    when (it) {
-                        is Resource.Error -> {
-                            _isExerciseLoading.value = false
-                            _showTryAgainButton.value = true
-                            _eventFlow.emit(
-                                UIEvent.ShowSnackBar(
-                                    it.message
-                                        ?: "Failed to load exercise constraints. Please try again."
-                                )
-                            )
-                        }
-                        is Resource.Loading -> {
-                            _isExerciseLoading.value = true
-                        }
-                        is Resource.Success -> {
-                            it.data?.let { phases ->
-                                Log.d(TAG, "fetchExerciseConstraints: $phases")
-                                setExerciseConstraints(
-                                    testId = testId,
-                                    exerciseId = exerciseId,
-                                    phases = phases
-                                )
-                            }
-                            _isExerciseLoading.value = false
-                        }
-                    }
-                }.launchIn(this)
-        }
-    }
-
     private fun setExerciseList(testId: String, exercises: List<Exercise>) {
         for (index in 0.._assessments.value.size) {
             if (_assessments.value[index].testId == testId) {
                 _assessments.value[index].exercises = exercises
                 _exercises.value = exercises.sortedBy { it.name }
-                break
-            }
-        }
-    }
-
-    private fun setExerciseConstraints(testId: String, exerciseId: Int, phases: List<Phase>) {
-        for (index1 in 0.._assessments.value.size) {
-            if (_assessments.value[index1].testId == testId) {
-                for (index2 in 0.._assessments.value[index1].exercises.size) {
-                    if (_assessments.value[index1].exercises[index2].id == exerciseId) {
-                        _assessments.value[index1].exercises[index2].phases = phases
-                        break
-                    }
-                }
                 break
             }
         }

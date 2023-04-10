@@ -1,6 +1,5 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList
 
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
@@ -26,7 +25,6 @@ import org.mmh.clean_therapist.android.core.component.Pill
 import org.mmh.clean_therapist.android.core.util.Screen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonEvent
 import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
-import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.ExerciseScreenActivity
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.component.ExerciseCard
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.component.ExerciseFilter
 import org.mmh.clean_therapist.android.ui.theme.Yellow
@@ -171,6 +169,7 @@ fun ExerciseListScreen(
                                         onGuidelineButtonClicked = {
                                             navController.navigate(
                                                 Screen.GuidelineScreen.withArgs(
+                                                    tenant,
                                                     testId,
                                                     it.id.toString()
                                                 )
@@ -181,17 +180,10 @@ fun ExerciseListScreen(
                                                 Screen.ExerciseScreen.withArgs(
                                                     tenant,
                                                     testId,
+                                                    it.name,
                                                     it.id.toString(),
                                                 )
                                             )
-//                                            val intent = Intent(
-//                                                context,
-//                                                ExerciseScreenActivity::class.java)
-//                                            intent.putExtra("exerciseId", it.id.toString())
-//                                            intent.putExtra("tenant", tenant)
-//                                            intent.putExtra("testId", testId)
-//
-//                                            context.startActivity(intent)
                                         }
                                     )
                                 }
