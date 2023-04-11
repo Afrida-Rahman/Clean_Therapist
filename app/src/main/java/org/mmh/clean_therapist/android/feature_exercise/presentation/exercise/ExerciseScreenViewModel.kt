@@ -236,6 +236,18 @@ class ExerciseScreenViewModel @Inject constructor(
         }
     }
 
+    fun onResume(context: Context, lifecycleOwner: LifecycleOwner) {
+        bindAllCameraUseCases(context, lifecycleOwner)
+    }
+
+    fun onPause() {
+        imageProcessor?.run { this.stop() }
+    }
+
+    fun onDestroy() {
+        imageProcessor?.run { this.stop() }
+    }
+
     companion object {
         private val REQUIRED_RUNTIME_PERMISSIONS =
             arrayOf(

@@ -13,12 +13,15 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import org.mmh.clean_therapist.R
@@ -51,20 +54,6 @@ fun ExerciseScreen(
 
     viewModel.fetchExerciseConstraints(tenant, exerciseId)
 
-    viewModel.cameraSelector =
-        CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()
-    ViewModelProvider(
-        navController.getViewModelStoreOwner(navGraphId = navController.graph.id),
-        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-    )[ExerciseViewModel::class.java]
-        .processCameraProvider
-        .observe(
-            lifecycleOwner
-        ) { provider: ProcessCameraProvider? ->
-            viewModel.cameraProvider = provider
-            viewModel.bindAllCameraUseCases(context, lifecycleOwner)
-        }
-
     val scaffoldState = rememberScaffoldState()
     AndroidView(factory = {
         View.inflate(it, R.layout.activity_exercise_screen, null)
@@ -73,6 +62,19 @@ fun ExerciseScreen(
         update = {
             viewModel.previewView = it.findViewById(R.id.preview_view)
             viewModel.graphicOverlay = it.findViewById(R.id.graphic_overlay)
+            viewModel.cameraSelector =
+                CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()
+            ViewModelProvider(
+                navController.getViewModelStoreOwner(navGraphId = navController.graph.id),
+                ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+            )[ExerciseViewModel::class.java]
+                .processCameraProvider
+                .observe(
+                    lifecycleOwner
+                ) { provider: ProcessCameraProvider? ->
+                    viewModel.cameraProvider = provider
+                    viewModel.bindAllCameraUseCases(context, lifecycleOwner)
+                }
             val exerciseNameTV:TextView = it.findViewById(R.id.exercise_name)
             exerciseNameTV.text = exerciseName
             it.findViewById<ImageButton>(R.id.camera_switch_button)
@@ -107,7 +109,23 @@ fun ExerciseScreen(
                 }
         }
     )
+    DisposableEffect(lifecycleOwner){
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME){
+                viewModel.onResume(context, lifecycleOwner)
+            } else if (event == Lifecycle.Event.ON_PAUSE) {
+                viewModel.onPause()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            viewModel.onDestroy()
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+
+    }
     LaunchedEffect(key1 = true) {
+
         commonViewModel.eventFlow.collect { event ->
             when (event) {
                 is UIEvent.ShowSnackBar -> {
