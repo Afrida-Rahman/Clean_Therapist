@@ -26,18 +26,21 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.UIEvent
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 
 @Composable
 fun ExerciseScreen(
     tenant: String,
     testId: String,
-    exerciseName: String,
-    exerciseId: Int,
+    exercise: Exercise,
     navController: NavController,
     commonViewModel: CommonViewModel,
     viewModel: ExerciseScreenViewModel = hiltViewModel()
 ) {
+
+    viewModel.setExerciseConstraints(tenant, exercise)
+
     val context = LocalContext.current
     val application = context.applicationContext as Application
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -51,8 +54,6 @@ fun ExerciseScreen(
     }
 
     viewModel.CheckAndGetPermission(context, launcher)
-
-    viewModel.fetchExerciseConstraints(tenant, exerciseId)
 
     val scaffoldState = rememberScaffoldState()
     AndroidView(factory = {
@@ -76,7 +77,7 @@ fun ExerciseScreen(
                     viewModel.bindAllCameraUseCases(context, lifecycleOwner)
                 }
             val exerciseNameTV:TextView = it.findViewById(R.id.exercise_name)
-            exerciseNameTV.text = exerciseName
+            exerciseNameTV.text = exercise.name
             it.findViewById<ImageButton>(R.id.camera_switch_button)
                 .setOnClickListener {
                     if (viewModel.cameraProvider == null) {

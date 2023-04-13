@@ -6,6 +6,8 @@ import androidx.navigation.*
 import androidx.navigation.compose.composable
 import org.mmh.clean_therapist.android.core.util.EXERCISE_ROUTE
 import org.mmh.clean_therapist.android.core.util.Screen
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.fromJson
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.AssessmentListScreen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.ExerciseScreen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.ExerciseListScreen
@@ -74,7 +76,7 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
             }
         }
         composable(
-            route = Screen.ExerciseScreen.route + "/{tenant}/{testId}/{exerciseName}/{exerciseId}",
+            route = Screen.ExerciseScreen.route + "/{tenant}/{testId}/{exercise}",
             arguments = listOf(
                 navArgument(name = "tenant") {
                     type = NavType.StringType
@@ -82,25 +84,21 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                 navArgument(name = "testId") {
                     type = NavType.StringType
                 },
-                navArgument(name = "exerciseId") {
-                    type = NavType.IntType
+                navArgument(name = "exercise") {
+                    type = NavType.StringType
                 }
             )
         ) {
             it.arguments?.getString("tenant")?.let { tenant ->
                 it.arguments?.getString("testId")?.let { testId ->
-                    it.arguments?.getString("exerciseName")?.let { exerciseName ->
-                        it.arguments?.getInt("exerciseId")?.let { exerciseId ->
-                            ExerciseScreen(
-                                tenant = tenant,
-                                testId = testId,
-                                exerciseName = exerciseName,
-                                exerciseId = exerciseId,
-                                navController = navController,
-                                commonViewModel = commonViewModel
-                            )
-
-                        }
+                    it.arguments?.getString("exercise")?.let { exercise ->
+                        ExerciseScreen(
+                            tenant = tenant,
+                            testId = testId,
+                            exercise = exercise.fromJson(Exercise::class.java),
+                            navController = navController,
+                            commonViewModel = commonViewModel
+                        )
                     }
                 }
             }

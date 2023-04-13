@@ -23,6 +23,7 @@ import org.mmh.clean_therapist.android.core.UIEvent
 import org.mmh.clean_therapist.android.core.component.CustomTopAppBar
 import org.mmh.clean_therapist.android.core.component.Pill
 import org.mmh.clean_therapist.android.core.util.Screen
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.toJson
 import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonEvent
 import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.component.ExerciseCard
@@ -180,8 +181,7 @@ fun ExerciseListScreen(
                                                 Screen.ExerciseScreen.withArgs(
                                                     tenant,
                                                     testId,
-                                                    it.name,
-                                                    it.id.toString(),
+                                                    it.toJson()
                                                 )
                                             )
                                         }

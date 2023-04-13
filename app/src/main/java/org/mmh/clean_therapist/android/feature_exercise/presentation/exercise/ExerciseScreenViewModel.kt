@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.PoseDetectorProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
@@ -38,9 +39,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ExerciseScreenViewModel @Inject constructor(
     private val exerciseUseCases: ExerciseUseCases) : ViewModel() {
-
-    private val _phases = mutableStateOf<List<Phase>>(emptyList())
-    private val phases: State<List<Phase>> = _phases
+    private lateinit var exercise: Exercise
 
     @SuppressLint("StaticFieldLeak")
     var previewView: PreviewView? = null
@@ -201,7 +200,7 @@ class ExerciseScreenViewModel @Inject constructor(
                 needUpdateGraphicOverlayImageSourceInfo = false
             }
             try {
-                graphicOverlay!!.phases = phases.value
+                graphicOverlay!!.phases = exercise.phases
                 imageProcessor!!.processImageProxy(imageProxy, graphicOverlay)
             } catch (e: MlKitException) {
                 Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT)
@@ -214,9 +213,14 @@ class ExerciseScreenViewModel @Inject constructor(
         )
     }
 
-    fun fetchExerciseConstraints(tenant: String, exerciseId: Int) {
+    fun setExerciseConstraints(tenant: String, exercise: Exercise) {
+        this.exercise = exercise
+        fetchExerciseConstraints(tenant)
+    }
+
+    private fun fetchExerciseConstraints(tenant: String) {
         viewModelScope.launch {
-            exerciseUseCases.fetchExerciseConstraints(tenant = tenant, exerciseId = exerciseId)
+            exerciseUseCases.fetchExerciseConstraints(tenant = tenant, exerciseId = exercise.id)
                 .onEach {
                     when (it) {
                         is Resource.Error -> {
@@ -227,9 +231,8 @@ class ExerciseScreenViewModel @Inject constructor(
                         }
                         is Resource.Success -> {
                             it.data?.let { phases ->
-                                _phases.value = phases
+                                exercise.phases = phases
                             }
-
                         }
                     }
                 }.launchIn(this)
