@@ -119,4 +119,23 @@ object VisualUtils {
         }
     }
 
+    fun isInsideBox(
+        person: Person,
+        consideredIndices: List<Int>,
+        canvasHeight: Int,
+        canvasWidth: Int
+    ): Boolean {
+        var rightPosition = true
+        person.keyPoints.forEach {
+            if (it.bodyPart.position in consideredIndices) {
+                val x = it.coordinate.x
+                val y = it.coordinate.y
+                if (x < 0 || x > canvasWidth || y < 0 || y > canvasHeight) {
+                    rightPosition = false
+                }
+            }
+        }
+        return rightPosition
+    }
+
 }

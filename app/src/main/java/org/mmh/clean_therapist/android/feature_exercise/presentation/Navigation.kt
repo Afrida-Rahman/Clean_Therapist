@@ -95,7 +95,8 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                         ExerciseScreen(
                             tenant = tenant,
                             testId = testId,
-                            exercise = exercise.fromJson(Exercise::class.java),
+                            exercise = exercise.replace("\$\$\$", "/")
+                            .fromJson(Exercise::class.java),
                             navController = navController,
                             commonViewModel = commonViewModel
                         )

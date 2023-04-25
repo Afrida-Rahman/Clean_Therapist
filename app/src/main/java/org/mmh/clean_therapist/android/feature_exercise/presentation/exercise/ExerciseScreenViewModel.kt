@@ -2,6 +2,7 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
@@ -15,8 +16,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
@@ -29,6 +28,9 @@ import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.Exercises
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home.GeneralExercise
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home.HomeExercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.PoseDetectorProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
@@ -39,7 +41,9 @@ import javax.inject.Inject
 @HiltViewModel
 class ExerciseScreenViewModel @Inject constructor(
     private val exerciseUseCases: ExerciseUseCases) : ViewModel() {
+
     private lateinit var exercise: Exercise
+    private lateinit var homeExercise: HomeExercise
 
     @SuppressLint("StaticFieldLeak")
     var previewView: PreviewView? = null
@@ -201,7 +205,9 @@ class ExerciseScreenViewModel @Inject constructor(
             }
             try {
                 graphicOverlay!!.phases = exercise.phases
-                imageProcessor!!.processImageProxy(imageProxy, graphicOverlay)
+                imageProcessor!!.processImageProxy(imageProxy, graphicOverlay).let { person ->
+                    Log.d(TAG, "bindAnalysisUseCase: $person")
+                }
             } catch (e: MlKitException) {
                 Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT)
                     .show()
@@ -213,9 +219,22 @@ class ExerciseScreenViewModel @Inject constructor(
         )
     }
 
-    fun setExerciseConstraints(tenant: String, exercise: Exercise) {
+    fun setExerciseConstraints(context: Context, tenant: String, exercise: Exercise) {
         this.exercise = exercise
+        val existingExercise = Exercises.get(context, exercise.id)
+        homeExercise = existingExercise ?: GeneralExercise(
+            context = context, exerciseId = exercise.id, active = true
+        )
         fetchExerciseConstraints(tenant)
+        homeExercise.setExercise(
+            exerciseName = exercise.name,
+            exerciseInstruction = "",
+            exerciseImageUrls = listOf(),
+            exerciseVideoUrls = "",
+            repetitionLimit = exercise.repetition,
+            setLimit = exercise.set,
+            protoId = exercise.protocolId,
+        )
     }
 
     private fun fetchExerciseConstraints(tenant: String) {
@@ -231,8 +250,9 @@ class ExerciseScreenViewModel @Inject constructor(
                         }
                         is Resource.Success -> {
                             it.data?.let { phases ->
-                                exercise.phases = phases
+                                homeExercise.rightCountPhases = phases.sortedBy { it -> it.id } as MutableList<Phase>
                             }
+                            homeExercise.rightCountPhases = homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList()).toMutableList()
                         }
                     }
                 }.launchIn(this)

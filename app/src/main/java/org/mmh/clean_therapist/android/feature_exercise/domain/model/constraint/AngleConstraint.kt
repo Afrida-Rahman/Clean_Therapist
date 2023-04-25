@@ -10,14 +10,17 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.LineType
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
 
 data class AngleConstraint(
-    val startPointIndex: Int,
-    val middlePointIndex: Int,
-    val endPointIndex: Int,
     val lineType: LineType = LineType.SOLID,
-    val minValidationValue: Int,
-    val maxValidationValue: Int,
     val isClockwise: Boolean,
-    val shouldDrawExtensionFlexion: Boolean
+    val shouldDrawExtensionFlexion: Boolean,
+    override val minValidationValue: Int,
+    override val maxValidationValue: Int,
+    override var storedValues: ArrayList<Int> = ArrayList(),
+    override var lowestMinValidationValue: Int,
+    override var lowestMaxValidationValue: Int,
+    override val startPointIndex: Int,
+    override val middlePointIndex: Int,
+    override val endPointIndex: Int
 ) : Constraint {
     override fun draw(draw: Draw, person: Person) {
         var color: Int

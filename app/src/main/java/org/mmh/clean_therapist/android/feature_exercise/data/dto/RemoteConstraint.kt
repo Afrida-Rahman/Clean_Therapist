@@ -17,6 +17,8 @@ data class RemoteConstraint(
     @SerializedName("EndKeyPosition") val endKeyPosition: String,
     @SerializedName("MinValidationValue") val minValidationValue: Int,
     @SerializedName("MaxValidationValue") val maxValidationValue: Int,
+    @SerializedName("LowestMinValidationValue") val lowestMinValidationValue: Int,
+    @SerializedName("LowestMaxValidationValue") val lowestMaxValidationValue: Int,
     @SerializedName("AngleArea") val angleArea: String,
     @SerializedName("DrawExtensionFlexion") val shouldDrawExtensionFlexion: Boolean
 )
@@ -34,6 +36,8 @@ fun RemoteConstraint.toConstraint(): Constraint {
             },
             minValidationValue = minValidationValue,
             maxValidationValue = maxValidationValue,
+            lowestMinValidationValue = lowestMinValidationValue,
+            lowestMaxValidationValue = lowestMaxValidationValue,
             isClockwise = angleArea == "clockwise",
             shouldDrawExtensionFlexion = shouldDrawExtensionFlexion
         )
@@ -46,7 +50,9 @@ fun RemoteConstraint.toConstraint(): Constraint {
                 LineType.DASHED
             },
             minValidationValue = minValidationValue,
-            maxValidationValue = maxValidationValue
+            maxValidationValue = maxValidationValue,
+            lowestMinValidationValue = lowestMinValidationValue,
+            lowestMaxValidationValue = lowestMaxValidationValue
         )
     }
 }

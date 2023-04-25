@@ -8,11 +8,15 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.LineType
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
 
 data class LineConstraint(
-    val startPointIndex: Int,
-    val endPointIndex: Int,
+    override val startPointIndex: Int,
+    override val middlePointIndex: Int = 0,
+    override val endPointIndex: Int,
     val lineType: LineType = LineType.SOLID,
-    val minValidationValue: Int,
-    val maxValidationValue: Int
+    override val minValidationValue: Int,
+    override val maxValidationValue: Int,
+    override var lowestMinValidationValue: Int,
+    override var lowestMaxValidationValue: Int,
+    override var storedValues: ArrayList<Int> = ArrayList()
 ) : Constraint {
     override fun draw(draw: Draw, person: Person) {
         val lineStyle = if (lineType == LineType.SOLID) {

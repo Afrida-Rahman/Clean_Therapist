@@ -64,10 +64,10 @@ class PoseGraphic(
         rightPaint.color = Color.YELLOW
     }
 
-    override fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>) {
+    override fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>) : Person? {
         val landmarks = pose.allPoseLandmarks
         if (landmarks.isEmpty()) {
-            return
+            return null
         }
         val draw = Draw(canvas, Color.WHITE, lineWidth)
         draw.canvas.width
@@ -94,9 +94,7 @@ class PoseGraphic(
                 constraint.draw(draw, person)
             }
         }
-
-
-
+        return person
     }
 
     companion object {

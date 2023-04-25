@@ -38,10 +38,10 @@ fun ExerciseScreen(
     commonViewModel: CommonViewModel,
     viewModel: ExerciseScreenViewModel = hiltViewModel()
 ) {
-
-    viewModel.setExerciseConstraints(tenant, exercise)
-
     val context = LocalContext.current
+
+    viewModel.setExerciseConstraints(context, tenant, exercise)
+
     val application = context.applicationContext as Application
     val lifecycleOwner = LocalLifecycleOwner.current
 

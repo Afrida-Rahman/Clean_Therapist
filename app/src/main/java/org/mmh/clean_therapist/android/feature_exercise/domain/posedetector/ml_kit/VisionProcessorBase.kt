@@ -10,6 +10,7 @@ import androidx.camera.core.ImageProxy
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskExecutors
 import com.google.mlkit.vision.common.InputImage
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.BitmapUtils
 import java.nio.ByteBuffer
 
@@ -82,9 +83,9 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
     override fun processImageProxy(
         image: ImageProxy?,
         graphicOverlay: GraphicOverlay?
-    ) {
+    ): Person? {
         if (isShutdown) {
-            return
+            return null
         }
         val bitmap: Bitmap? = image?.let { BitmapUtils.getBitmap(it) }
 
@@ -99,6 +100,7 @@ abstract class VisionProcessorBase<T>(context: Context) : VisionImageProcessor {
                 // may stall.
                 .addOnCompleteListener { image.close() }
         }
+        return graphicOverlay?.person
     }
 
     // -----------------Common processing logic-------------------------------------------------------

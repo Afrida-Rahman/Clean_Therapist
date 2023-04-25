@@ -181,7 +181,7 @@ fun ExerciseListScreen(
                                                 Screen.ExerciseScreen.withArgs(
                                                     tenant,
                                                     testId,
-                                                    it.toJson()
+                                                    it.toJson().replace("/", "$$$")
                                                 )
                                             )
                                         }
