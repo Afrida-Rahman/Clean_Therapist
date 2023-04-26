@@ -62,6 +62,9 @@ fun ExerciseScreen(
         modifier = Modifier.fillMaxSize(),
         update = {
             viewModel.previewView = it.findViewById(R.id.preview_view)
+            viewModel.countDisplay = it.findViewById(R.id.right_count)
+            viewModel.maxHoldTimeDisplay = it.findViewById(R.id.max_hold_time_display)
+            viewModel.wrongCountDisplay = it.findViewById(R.id.wrong_count)
             viewModel.graphicOverlay = it.findViewById(R.id.graphic_overlay)
             viewModel.cameraSelector =
                 CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()

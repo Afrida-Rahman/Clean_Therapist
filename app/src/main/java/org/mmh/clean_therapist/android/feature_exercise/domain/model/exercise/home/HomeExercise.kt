@@ -1,20 +1,11 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home
 
-import android.content.ContentValues.TAG
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
-import kotlinx.coroutines.*
 import org.mmh.clean_therapist.android.core.util.Utilities
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.*
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.constraint.AngleConstraint
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils.getIndexName
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import kotlin.math.max
 import kotlin.math.min
 
@@ -79,6 +70,8 @@ abstract class HomeExercise(
 
     fun getRepetitionCount() = repetitionCounter
 
+    fun getWrongCount() = wrongCounter
+
     fun getSetCount() = setCounter
 
     fun setFocalLength(lengths: FloatArray?) {
@@ -94,6 +87,7 @@ abstract class HomeExercise(
             val phase = rightCountPhases[phaseIndex]
             val minConfidenceSatisfied = isMinConfidenceSatisfied(phase, person)
             if (rightCountPhases.isNotEmpty() && minConfidenceSatisfied && !takingRest) {
+
                 val constraintSatisfied = isConstraintSatisfied(
                     person,
                     phase.constraints
@@ -135,7 +129,8 @@ abstract class HomeExercise(
         }
     }
 
-    open fun wrongExerciseCount(person: Person, canvasHeight: Int, canvasWidth: Int) {}
+    open fun wrongExerciseCount(person: Person, canvasHeight: Int, canvasWidth: Int) {
+    }
 
     private fun isMinConfidenceSatisfied(phase: Phase, person: Person): Boolean {
         val indices = mutableSetOf<Int>()
@@ -173,7 +168,6 @@ abstract class HomeExercise(
 
     fun setNewConstraints() {
         trackIndex = 0
-        //Log.d("setCount", "right count phases: $rightCountPhases \n \n ")
         rightCountPhases.forEach { phase ->
             phase.constraints.forEach { constraint ->
                 val standardValues = constraint.getStandardConstraints()
@@ -182,7 +176,6 @@ abstract class HomeExercise(
                 val refinedConstraintGap = minMaxMedian.max - minMaxMedian.max
 
                 if (minMaxMedian.median < standardValues.standardMin || minMaxMedian.median > standardValues.standardMax) {
-                    //Log.d("setCount", "Out of the standard constraints!")
                     if (refinedConstraintGap > standardConstraintGap) {
                         val newMin = minMaxMedian.median - (standardConstraintGap / 2)
                         val newMax = minMaxMedian.median + (standardConstraintGap / 2)
@@ -201,7 +194,6 @@ abstract class HomeExercise(
                     }
 
                 } else {
-                    //Log.d("setCount", "Satisfies the standard constraints!")
                     constraint.setStandardConstraints()
                 }
                 constraint.storedValues.clear()
@@ -224,9 +216,6 @@ abstract class HomeExercise(
                 )
                 restriction.clear()
 
-
-
-                //Log.d("setCount", "Output:: ${phaseSummary}")
             }
 
         }
@@ -237,12 +226,11 @@ abstract class HomeExercise(
         var constraintSatisfied = true
         constraints.forEach {
             if(it is AngleConstraint) {
-                val angleConstraint = it as AngleConstraint
                 val angle = Utilities.angle(
                     startPoint = person.keyPoints[it.startPointIndex].toRealPoint(),
                     middlePoint = person.keyPoints[it.middlePointIndex].toRealPoint(),
                     endPoint = person.keyPoints[it.endPointIndex].toRealPoint(),
-                    clockWise = it.isClockwise
+                    clockWise = !it.isClockwise
                 )
                 val minValue = min(it.lowestMinValidationValue, it.minValidationValue)
                 val maxValue = max(it.lowestMaxValidationValue, it.maxValidationValue)
@@ -295,4 +283,6 @@ abstract class HomeExercise(
             }
         }
     }
+
+    fun getMaxHoldTime(): Int = rightCountPhases.map { it.holdTime }.maxOrNull() ?: 0
 }

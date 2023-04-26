@@ -5,7 +5,9 @@ import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
+import android.provider.Settings.Global.getString
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.camera.core.CameraSelector
@@ -25,6 +27,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
@@ -44,6 +47,10 @@ class ExerciseScreenViewModel @Inject constructor(
 
     private lateinit var exercise: Exercise
     private lateinit var homeExercise: HomeExercise
+
+    lateinit var countDisplay: TextView
+    lateinit var maxHoldTimeDisplay: TextView
+    lateinit var wrongCountDisplay: TextView
 
     @SuppressLint("StaticFieldLeak")
     var previewView: PreviewView? = null
@@ -206,7 +213,17 @@ class ExerciseScreenViewModel @Inject constructor(
             try {
                 graphicOverlay!!.phases = exercise.phases
                 imageProcessor!!.processImageProxy(imageProxy, graphicOverlay).let { person ->
-                    Log.d(TAG, "bindAnalysisUseCase: $person")
+                    if (person != null && homeExercise.rightCountPhases.size != 0 && person.keyPoints.isNotEmpty()) {
+                        homeExercise.rightExerciseCount(person, imageProxy.height, imageProxy.width)
+                        homeExercise.wrongExerciseCount(person, imageProxy.height, imageProxy.width)
+                        countDisplay.text = "%d/%d".format(
+                            homeExercise.getRepetitionCount(), homeExercise.getSetCount()
+                        )
+                        maxHoldTimeDisplay.text =
+                            "%d".format(homeExercise.getMaxHoldTime())
+                        wrongCountDisplay.text =
+                        "%d".format(homeExercise.getWrongCount())
+                    }
                 }
             } catch (e: MlKitException) {
                 Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT)
@@ -250,6 +267,7 @@ class ExerciseScreenViewModel @Inject constructor(
                         }
                         is Resource.Success -> {
                             it.data?.let { phases ->
+                                exercise.phases = phases
                                 homeExercise.rightCountPhases = phases.sortedBy { it -> it.id } as MutableList<Phase>
                             }
                             homeExercise.rightCountPhases = homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList()).toMutableList()
