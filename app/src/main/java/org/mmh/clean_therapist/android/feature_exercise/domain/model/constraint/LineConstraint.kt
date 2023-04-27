@@ -9,7 +9,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
 
 data class LineConstraint(
     override val startPointIndex: Int,
-    override val middlePointIndex: Int = 0,
+    override val middlePointIndex: Int = -1,
     override val endPointIndex: Int,
     val lineType: LineType = LineType.SOLID,
     override val minValidationValue: Int,

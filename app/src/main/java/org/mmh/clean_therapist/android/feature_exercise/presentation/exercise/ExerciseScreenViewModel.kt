@@ -2,10 +2,8 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
-import android.provider.Settings.Global.getString
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
@@ -27,7 +25,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
@@ -268,6 +265,7 @@ class ExerciseScreenViewModel @Inject constructor(
                         is Resource.Success -> {
                             it.data?.let { phases ->
                                 exercise.phases = phases
+                                homeExercise.setConsideredIndices(phases)
                                 homeExercise.rightCountPhases = phases.sortedBy { it -> it.id } as MutableList<Phase>
                             }
                             homeExercise.rightCountPhases = homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList()).toMutableList()
