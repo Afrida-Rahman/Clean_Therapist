@@ -317,6 +317,7 @@ class AsyncAudioPlayer(private val context: Context) {
         const val DID_YOU_FIND_THIS_EXERCISE_TO_BE_TOO_DIFFICULT = "did you find this exercise to be too difficult?"
         const val WAS_THIS_EXERCISE_TOO_EASY = "was this exercise too easy?"
         const val DO_YOU_FIND_THIS_EXERCISE_TO_BE_TOO_PAINFUL = "do you find this exercise to be too painful?"
+        const val PLEASE_STAY_INSIDE_BOX = "please stay inside box"
     }
 
     fun playText(instruction: Instruction) {
@@ -1343,6 +1344,10 @@ class AsyncAudioPlayer(private val context: Context) {
         DO_YOU_FIND_THIS_EXERCISE_TO_BE_TOO_PAINFUL -> Instruction(
             text = text,
             player = MediaPlayer.create(context, R.raw.do_you_find_this_exercise_to_be_too_painful)
+        )
+        PLEASE_STAY_INSIDE_BOX -> Instruction(
+            text = text,
+            player = MediaPlayer.create(context, R.raw.please_stay_inside_box)
         )
         else -> Instruction(text = text, player = null)
     }

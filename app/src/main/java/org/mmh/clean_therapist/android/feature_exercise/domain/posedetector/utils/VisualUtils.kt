@@ -1,6 +1,8 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils
 
+import android.content.ContentValues.TAG
 import android.graphics.PointF
+import android.util.Log
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseLandmark
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.BodyPart
@@ -130,7 +132,11 @@ object VisualUtils {
             if (it.bodyPart.position in consideredIndices) {
                 val x = it.coordinate.x
                 val y = it.coordinate.y
-                if (x < 0 || x > canvasWidth || y < 0 || y > canvasHeight) {
+//                if (x < 0 || x > canvasWidth || y < 0 || y > canvasHeight) {
+//                    Log.d(TAG, "isInsideBox: ${it.bodyPart.position} -> $x, $y")
+//                    rightPosition = false
+//                }
+                if (it.score < 0.3f) {
                     rightPosition = false
                 }
             }

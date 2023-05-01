@@ -1,6 +1,8 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home
 
+import android.content.ContentValues.TAG
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RawRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -231,7 +233,13 @@ abstract class HomeExercise(
 
     open fun onEvent(event: CommonInstructionEvent) {
         when (event) {
-            is CommonInstructionEvent.OutSideOfBox -> playAudio(R.raw.please_stay_inside_box)
+            is CommonInstructionEvent.OutSideOfBox -> {
+
+                playInstruction(
+                    firstDelay = 0L,
+                    firstInstruction = AsyncAudioPlayer.PLEASE_STAY_INSIDE_BOX
+                )
+            }
             is CommonInstructionEvent.HandIsNotStraight -> playAudio(R.raw.keep_hand_straight)
             is CommonInstructionEvent.LeftHandIsNotStraight -> playAudio(R.raw.left_hand_straight)
             is CommonInstructionEvent.RightHandIsNotStraight -> playAudio(R.raw.right_hand_straight)
@@ -256,6 +264,7 @@ abstract class HomeExercise(
                 if (setCounter == 0) {
                     trackMinMaxConstraints(person = person)
                 }
+                Log.d(TAG, "rightExerciseCount: ${consideredIndices.toList()}")
                 if (VisualUtils.isInsideBox(
                         person,
                         consideredIndices.toList(),
@@ -281,18 +290,24 @@ abstract class HomeExercise(
                             downTimeCounter = 0
                         }
                     } else {
-//                        if (phaseIndex != 0) countDownAudio(downTimeCounter)
+                        if (phaseIndex != 0) countDownAudio(downTimeCounter)
                     }
                 } else {
                     downTimeCounter = 0
                     phaseEntered = false
                 }
+                commonInstruction(
+                    person,
+                    rightCountPhases[phaseIndex].constraints,
+                    canvasHeight,
+                    canvasWidth
+                )
+                exerciseInstruction(person)
             }
         }
     }
 
-    open fun wrongExerciseCount(person: Person, canvasHeight: Int, canvasWidth: Int) {
-    }
+    open fun wrongExerciseCount(person: Person, canvasHeight: Int, canvasWidth: Int) {}
 
     open fun exerciseInstruction(person: Person) {}
 
@@ -332,11 +347,43 @@ abstract class HomeExercise(
         if (repetitionCounter >= maxRepCount) {
             repetitionCounter = 0
             setCounter++
+            if (setCounter == maxSetCount) {
+                asyncAudioPlayer.playText(getInstruction(AsyncAudioPlayer.FINISH))
+                CoroutineScope(Dispatchers.Main).launch {
+                    playInstruction(
+                        firstDelay = 1000L,
+                        firstInstruction = AsyncAudioPlayer.CONGRATS
+                    )
+                }
+            } else {
+                playInstruction(
+                    firstDelay = 0L,
+                    firstInstruction = setCountText(setCounter),
+                    secondDelay = SET_INTERVAL,
+                    secondInstruction = AsyncAudioPlayer.START_AGAIN,
+                    shouldTakeRest = true
+                )
+            }
             if (setCounter == 1) {
                 setNewConstraints()
             }
         } else {
             val phase = rightCountPhases[0]
+            if (phase.holdTime > 0) {
+                val repetitionInstruction = getInstruction(repetitionCounter.toString())
+                playInstruction(
+                    firstDelay = 0L,
+                    firstInstruction = repetitionCounter.toString(),
+                    secondDelay = repetitionInstruction.player?.duration?.toLong() ?: 500L,
+                    secondInstruction = if (playPauseCue) AsyncAudioPlayer.PAUSE else null,
+                    shouldTakeRest = true
+                )
+            } else {
+                playInstruction(
+                    firstDelay = 0L,
+                    firstInstruction = repetitionCounter.toString()
+                )
+            }
         }
     }
 

@@ -4,7 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.ImageFormat
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.media.ImageReader
 import android.util.Log
+import android.util.Size
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -17,6 +25,7 @@ import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,11 +52,14 @@ class ExerciseScreenViewModel @Inject constructor(
     private val exerciseUseCases: ExerciseUseCases) : ViewModel() {
 
     private lateinit var exercise: Exercise
-    private lateinit var homeExercise: HomeExercise
+    lateinit var homeExercise: HomeExercise
 
     lateinit var countDisplay: TextView
     lateinit var maxHoldTimeDisplay: TextView
     lateinit var wrongCountDisplay: TextView
+    lateinit var distanceDisplay: TextView
+    lateinit var phaseDialogueDisplay: TextView
+    lateinit var exerciseProgressBar: ProgressBar
 
     @SuppressLint("StaticFieldLeak")
     var previewView: PreviewView? = null
@@ -158,6 +170,15 @@ class ExerciseScreenViewModel @Inject constructor(
         if (imageProcessor != null) {
             imageProcessor!!.stop()
         }
+        val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        try {
+            for (cameraId in manager.cameraIdList) {
+                val characteristics = manager.getCameraCharacteristics(cameraId)
+                homeExercise.setFocalLength(characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS))
+            }
+        } catch (e: CameraAccessException) {
+
+        }
         imageProcessor =
             try {
                 val poseDetectorOptions =
@@ -218,8 +239,29 @@ class ExerciseScreenViewModel @Inject constructor(
                         )
                         maxHoldTimeDisplay.text =
                             "%d".format(homeExercise.getMaxHoldTime())
+                        exerciseProgressBar.progress =
+                            homeExercise.getSetCount() * homeExercise.maxRepCount + homeExercise.getRepetitionCount()
                         wrongCountDisplay.text =
                         "%d".format(homeExercise.getWrongCount())
+                        homeExercise.getPersonDistance(person).let {
+                            distanceDisplay.text = "%.1f".format(it)
+                        }
+                        homeExercise.getPhase()?.let {
+                            it.instruction?.let { dialogue ->
+                                if (dialogue.isNotEmpty()) {
+                                    if (::phaseDialogueDisplay.isInitialized) {
+                                        phaseDialogueDisplay.visibility = View.VISIBLE
+                                        phaseDialogueDisplay.text =
+                                            "%s".format(dialogue)
+                                    }
+
+                                } else {
+                                    if (::phaseDialogueDisplay.isInitialized)
+                                        phaseDialogueDisplay.visibility = View.GONE
+                                }
+                            }
+
+                        }
                     }
                 }
             } catch (e: MlKitException) {
