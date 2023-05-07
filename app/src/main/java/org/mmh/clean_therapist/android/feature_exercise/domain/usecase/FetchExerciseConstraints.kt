@@ -1,5 +1,7 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.usecase
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.mmh.clean_therapist.android.core.Resource
@@ -20,12 +22,14 @@ class FetchExerciseConstraints @Inject constructor(
     ): Flow<Resource<List<Phase>>> = flow {
         emit(Resource.Loading())
         try {
+            Log.d(TAG, "invoke: $exerciseId")
             val exercisePhaseDto = repository.fetchExerciseConstraints(
                 payload = ExerciseConstraintPayload(
                     tenant = tenant,
                     exerciseId = exerciseId
                 )
             )
+            Log.d(TAG, "invoke: ${exercisePhaseDto.toPhaseList()}")
             emit(
                 Resource.Success(
                     exercisePhaseDto.toPhaseList()

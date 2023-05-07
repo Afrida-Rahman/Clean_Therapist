@@ -1,8 +1,6 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home
 
-import android.content.ContentValues.TAG
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RawRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -264,7 +262,6 @@ abstract class HomeExercise(
                 if (setCounter == 0) {
                     trackMinMaxConstraints(person = person)
                 }
-                Log.d(TAG, "rightExerciseCount: ${consideredIndices.toList()}")
                 if (VisualUtils.isInsideBox(
                         person,
                         consideredIndices.toList(),

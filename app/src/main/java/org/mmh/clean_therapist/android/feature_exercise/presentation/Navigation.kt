@@ -51,23 +51,27 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
             }
         }
         composable(
-            route = Screen.GuidelineScreen.route + "/{testId}/{exerciseId}",
+            route = Screen.GuidelineScreen.route + "/{tenant}/{testId}/{exercise}",
             arguments = listOf(
+                navArgument(name = "tenant") {
+                    type = NavType.StringType
+                },
                 navArgument(name = "testId") {
                     type = NavType.StringType
                 },
-                navArgument(name = "exerciseId") {
-                    type = NavType.IntType
+                navArgument(name = "exercise") {
+                    type = NavType.StringType
                 }
             )
         ) {
             it.arguments?.getString("tenant")?.let { tenant ->
-                it.arguments?.getString("testId")?.also { testId ->
-                    it.arguments?.getInt("exerciseId")?.let { exerciseId ->
+                it.arguments?.getString("testId")?.let { testId ->
+                    it.arguments?.getString("exercise")?.let { exercise ->
                         GuidelineScreen(
                             tenant = tenant,
                             testId = testId,
-                            exerciseId = exerciseId,
+                            exercise = exercise.replace("\$\$\$", "/")
+                                .fromJson(Exercise::class.java),
                             navController = navController,
                             commonViewModel = commonViewModel
                         )

@@ -11,10 +11,11 @@ import androidx.camera.core.CameraInfoUnavailableException
 import androidx.camera.core.CameraSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -28,6 +29,7 @@ import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.UIEvent
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
+import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.ImageSection
 
 @Composable
 fun ExerciseScreen(
@@ -39,6 +41,7 @@ fun ExerciseScreen(
     viewModel: ExerciseScreenViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val showDialog = remember { mutableStateOf(false) }
 
     viewModel.setExerciseConstraints(context, tenant, exercise)
 
@@ -56,6 +59,12 @@ fun ExerciseScreen(
     viewModel.CheckAndGetPermission(context, launcher)
 
     val scaffoldState = rememberScaffoldState()
+
+    if (showDialog.value) {
+        Alert(name = "Name",
+            showDialog = showDialog.value,
+            onDismiss = {showDialog.value = false})
+    }
     AndroidView(factory = {
         View.inflate(it, R.layout.activity_exercise_screen, null)
     },
@@ -118,6 +127,8 @@ fun ExerciseScreen(
                     )
                         .show()
                 }
+            it.findViewById<ImageButton>(R.id.btn_gif_display)
+                .setOnClickListener{showDialog.value = true}
         }
     )
     DisposableEffect(lifecycleOwner){
@@ -147,5 +158,24 @@ fun ExerciseScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun Alert(name: String, showDialog: Boolean, onDismiss: () -> Unit) {
+    var urls : List<String> = listOf("https://mmhva.s3.amazonaws.com/Images%2fRS%2fEvalExercise%2f78b269fe-e9d6-4d2f-a191-d064a95b6df6.png", "https://mmhva.s3.amazonaws.com/Images%2fRS%2fEvalExercise%2f0481b0cb-09a9-4430-bf02-af585e8f42e7.png", "https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+abduction+in+standing-e1122b9f-93ab-4ae9-b934-dc7ee6184716.gif")
+    if (showDialog) {
+        AlertDialog(
+            text = {
+                ImageSection(urls)
+            },
+            onDismissRequest = onDismiss,
+            confirmButton = {
+                TextButton(onClick = onDismiss ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {}
+        )
     }
 }

@@ -4,13 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.ImageFormat
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.media.ImageReader
 import android.util.Log
-import android.util.Size
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -25,7 +22,6 @@ import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -306,11 +302,14 @@ class ExerciseScreenViewModel @Inject constructor(
                         }
                         is Resource.Success -> {
                             it.data?.let { phases ->
-                                exercise.phases = phases
-                                homeExercise.setConsideredIndices(phases)
-                                homeExercise.rightCountPhases = phases.sortedBy { it -> it.id } as MutableList<Phase>
+                                if (phases != null){
+                                    exercise.phases = phases
+                                    homeExercise.setConsideredIndices(phases)
+                                    homeExercise.rightCountPhases = phases.sortedBy { it -> it.id } as MutableList<Phase>
+                                    homeExercise.rightCountPhases = homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList()).toMutableList()
+                                }
+
                             }
-                            homeExercise.rightCountPhases = homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList()).toMutableList()
                         }
                     }
                 }.launchIn(this)

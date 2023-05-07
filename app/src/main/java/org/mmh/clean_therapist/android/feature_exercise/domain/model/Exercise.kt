@@ -15,8 +15,8 @@ data class Exercise(
     var phases: List<Phase>
 )
 fun <Exercise> String.fromJson(type: Class<Exercise>): Exercise {
-    return Gson().fromJson(this, type)
+    return Gson().fromJson(this.replace("~~~~", "%"), type)
 }
 fun <Exercise> Exercise.toJson(): String {
-    return Gson().toJson(this)
+    return Gson().toJson(this).replace("%", "~~~~")
 }

@@ -1,5 +1,7 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation.guideline
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +16,7 @@ import androidx.navigation.NavController
 import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.component.CustomTopAppBar
 import org.mmh.clean_therapist.android.core.util.Screen
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.toJson
 import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.ImageSection
@@ -24,13 +27,12 @@ import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.c
 fun GuidelineScreen(
     tenant: String,
     testId: String,
-    exerciseId: Int,
+    exercise: Exercise,
     navController: NavController,
     commonViewModel: CommonViewModel
 ) {
     val scaffoldState = rememberScaffoldState()
-    val exercise = commonViewModel.getExercise(testId = testId, exerciseId = exerciseId)
-
+    Log.d(TAG, "GuidelineScreen: $exercise")
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
@@ -52,7 +54,7 @@ fun GuidelineScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            exercise?.let { exercise ->
+            exercise.let { exercise ->
                 Text(
                     text = exercise.name,
                     style = MaterialTheme.typography.h1,
@@ -64,7 +66,7 @@ fun GuidelineScreen(
                         Screen.ExerciseScreen.withArgs(
                             tenant,
                             testId,
-                            exercise.toJson()
+                            exercise.toJson().replace("/", "$$$")
                         )
                     )
                 }) {

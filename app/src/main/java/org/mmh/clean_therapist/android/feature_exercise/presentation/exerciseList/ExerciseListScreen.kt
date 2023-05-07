@@ -172,7 +172,7 @@ fun ExerciseListScreen(
                                                 Screen.GuidelineScreen.withArgs(
                                                     tenant,
                                                     testId,
-                                                    it.id.toString()
+                                                    it.toJson().replace("/", "$$$")
                                                 )
                                             )
                                         },

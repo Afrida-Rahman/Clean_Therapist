@@ -19,7 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.ui.StyledPlayerView
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import org.mmh.clean_therapist.android.ui.theme.EmmaVirtualTherapistTheme
 
 @Composable
@@ -52,17 +56,22 @@ fun VideoSection(videoUrl: String?) {
 fun PlayVideo(url: String) {
     val context = LocalContext.current
     val player = ExoPlayer.Builder(context).build()
-    val playerView = PlayerView(context)
+    val playerView = StyledPlayerView(context)
     val mediaItem = MediaItem.fromUri(url)
     val playWhenReady by rememberSaveable {
         mutableStateOf(false)
     }
-    player.setMediaItem(mediaItem)
+    val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
+    val mediaSource:MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+        .createMediaSource(MediaItem.fromUri(url))
+
+    player.setMediaSource(mediaSource)
     playerView.player = player
     LaunchedEffect(player) {
         player.prepare()
-        player.playWhenReady = playWhenReady
+        player.playWhenReady = false
         player.volume = 0f
+        player.play()
     }
     AndroidView(factory = {
         playerView
