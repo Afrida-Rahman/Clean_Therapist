@@ -239,13 +239,20 @@ class ExerciseScreenViewModel @Inject constructor(
                             homeExercise.getSetCount() * homeExercise.maxRepCount + homeExercise.getRepetitionCount()
                         wrongCountDisplay.text =
                         "%d".format(homeExercise.getWrongCount())
-                        homeExercise.getPersonDistance(person).let {
-                            distanceDisplay.text = "%.1f".format(it)
-                        }
                         homeExercise.getPhase()?.let {
                             it.instruction?.let { dialogue ->
                                 if (dialogue.isNotEmpty()) {
                                     if (::phaseDialogueDisplay.isInitialized) {
+                                        homeExercise.getPersonDistance(person).let {distance ->
+                                            distanceDisplay.text = "%.1f".format(distance)
+                                            if (distance <= 5f) {
+                                                phaseDialogueDisplay.textSize = 30f
+                                            } else if (5f < distance && distance <= 10f) {
+                                                phaseDialogueDisplay.textSize = 50f
+                                            } else {
+                                                phaseDialogueDisplay.textSize = 70f
+                                            }
+                                        }
                                         phaseDialogueDisplay.visibility = View.VISIBLE
                                         phaseDialogueDisplay.text =
                                             "%s".format(dialogue)
