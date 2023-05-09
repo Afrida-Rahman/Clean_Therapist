@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.UIEvent
@@ -24,8 +23,6 @@ import org.mmh.clean_therapist.android.core.component.CustomTopAppBar
 import org.mmh.clean_therapist.android.core.component.Pill
 import org.mmh.clean_therapist.android.core.util.Screen
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.toJson
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonEvent
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.component.ExerciseCard
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.component.ExerciseFilter
 import org.mmh.clean_therapist.android.ui.theme.Yellow
@@ -36,8 +33,7 @@ fun ExerciseListScreen(
     testId: String,
     creationDate: String,
     navController: NavController,
-    commonViewModel: CommonViewModel,
-    viewModel: ExerciseListViewModel = hiltViewModel()
+    commonViewModel: ExerciseListViewModel
 ) {
     val scaffoldState = rememberScaffoldState()
     var showExerciseFilter by remember {
@@ -59,7 +55,7 @@ fun ExerciseListScreen(
     commonViewModel.loadExercises(testId = testId, tenant = tenant)
 
     LaunchedEffect(key1 = true) {
-        viewModel.eventFlow.collect { event ->
+        commonViewModel.eventFlow.collect { event ->
             when (event) {
                 is UIEvent.ShowSnackBar -> {
                     scaffoldState.snackbarHostState.showSnackbar(event.message)
@@ -89,7 +85,7 @@ fun ExerciseListScreen(
                     AnimatedVisibility(visible = showExerciseFilter) {
                         ExerciseFilter {
                             commonViewModel.onEvent(
-                                CommonEvent.ApplyExerciseFilter(
+                                ExerciseListEvent.ApplyExerciseFilter(
                                     testId = testId,
                                     exerciseName = it
                                 )
@@ -144,7 +140,7 @@ fun ExerciseListScreen(
                     ) {
                         Button(onClick = {
                             commonViewModel.onEvent(
-                                CommonEvent.FetchExercises(
+                                ExerciseListEvent.FetchExercises(
                                     testId = testId,
                                     tenant = tenant
                                 )

@@ -170,7 +170,7 @@ class CommonViewModel @Inject constructor(
         }
     }
 
-    private fun fetchExercises(tenant: String, testId: String) {
+    fun fetchExercises(tenant: String, testId: String) {
         viewModelScope.launch {
             exerciseUseCases.fetchExercises(testId = testId, tenant = tenant)
                 .onEach {

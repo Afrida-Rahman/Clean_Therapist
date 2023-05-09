@@ -11,11 +11,13 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.fromJson
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.AssessmentListScreen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.ExerciseScreen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.ExerciseListScreen
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.ExerciseListViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.GuidelineScreen
 
 @OptIn(ExperimentalFoundationApi::class)
 fun NavGraphBuilder.exerciseNav(navController: NavController) {
     lateinit var commonViewModel: CommonViewModel
+    lateinit var exerciseListViewModel: ExerciseListViewModel
 
     navigation(route = EXERCISE_ROUTE, startDestination = Screen.AssessmentListScreen.route) {
         composable(route = Screen.AssessmentListScreen.route) {
@@ -36,6 +38,7 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                 }
             )
         ) {
+            exerciseListViewModel = hiltViewModel()
             it.arguments?.getString("tenant")?.let { tenant ->
                 it.arguments?.getString("testId")?.let { testId ->
                     it.arguments?.getString("creationDate")?.let { creationDate ->
@@ -44,7 +47,7 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                             testId = testId,
                             creationDate = creationDate,
                             navController = navController,
-                            commonViewModel = commonViewModel
+                            commonViewModel = exerciseListViewModel
                         )
                     }
                 }
