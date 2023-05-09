@@ -9,18 +9,22 @@ import org.mmh.clean_therapist.android.core.util.Screen
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.fromJson
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.AssessmentListScreen
+import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.AssessmentListViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.ExerciseScreen
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.ExerciseListScreen
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.ExerciseListViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.GuidelineScreen
 
 @OptIn(ExperimentalFoundationApi::class)
 fun NavGraphBuilder.exerciseNav(navController: NavController) {
     lateinit var commonViewModel: CommonViewModel
+    lateinit var exerciseListViewModel: ExerciseListViewModel
+    lateinit var assessmentListViewModel: AssessmentListViewModel
 
     navigation(route = EXERCISE_ROUTE, startDestination = Screen.AssessmentListScreen.route) {
         composable(route = Screen.AssessmentListScreen.route) {
-            commonViewModel = hiltViewModel()
-            AssessmentListScreen(navController = navController, viewModel = commonViewModel)
+            assessmentListViewModel = hiltViewModel()
+            AssessmentListScreen(navController = navController, viewModel = assessmentListViewModel)
         }
         composable(
             route = Screen.ExerciseListScreen.route + "/{tenant}/{testId}/{creationDate}",
@@ -36,6 +40,7 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                 }
             )
         ) {
+            exerciseListViewModel = hiltViewModel()
             it.arguments?.getString("tenant")?.let { tenant ->
                 it.arguments?.getString("testId")?.let { testId ->
                     it.arguments?.getString("creationDate")?.let { creationDate ->
@@ -44,7 +49,7 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                             testId = testId,
                             creationDate = creationDate,
                             navController = navController,
-                            commonViewModel = commonViewModel
+                            viewModel = exerciseListViewModel
                         )
                     }
                 }
@@ -100,7 +105,7 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                             tenant = tenant,
                             testId = testId,
                             exercise = exercise.replace("\$\$\$", "/")
-                            .fromJson(Exercise::class.java),
+                                .fromJson(Exercise::class.java),
                             navController = navController,
                             commonViewModel = commonViewModel
                         )

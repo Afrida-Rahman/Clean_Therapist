@@ -1,4 +1,4 @@
-package org.mmh.clean_therapist.android.feature_exercise.presentation
+package org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList
 
 import android.content.SharedPreferences
 import androidx.compose.runtime.State
@@ -6,8 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
@@ -18,12 +16,11 @@ import org.mmh.clean_therapist.android.core.UIEvent
 import org.mmh.clean_therapist.android.core.util.Utilities
 import org.mmh.clean_therapist.android.feature_authentication.domain.model.Patient
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Assessment
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.ExerciseUseCases
 import javax.inject.Inject
 
 @HiltViewModel
-class CommonViewModel @Inject constructor(
+class AssessmentListViewModel @Inject constructor(
     private val exerciseUseCases: ExerciseUseCases,
     private val preferences: SharedPreferences,
 ) : ViewModel() {
@@ -32,23 +29,14 @@ class CommonViewModel @Inject constructor(
     private val _assessments = mutableStateOf<List<Assessment>>(emptyList())
     val assessments: State<List<Assessment>> = _assessments
 
-
     private val _patient = Utilities.getPatient(preferences)
     var patient: Patient = _patient
-
-    private val _exercises = mutableStateOf<List<Exercise>?>(null)
-    val exercises: State<List<Exercise>?> = _exercises
 
     private val _isAssessmentLoading = mutableStateOf(false)
     val isAssessmentLoading: State<Boolean> = _isAssessmentLoading
 
-    private val _isExerciseLoading = mutableStateOf(true)
-    val isExerciseLoading: State<Boolean> = _isExerciseLoading
-
     private val _showTryAgainButton = mutableStateOf(false)
     val showTryAgain: State<Boolean> = _showTryAgainButton
-
-    private var searchCoroutine: Job? = null
 
     private val _eventFlow = MutableSharedFlow<UIEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -57,26 +45,19 @@ class CommonViewModel @Inject constructor(
         fetchAssessments(patient)
     }
 
-    fun onEvent(event: CommonEvent) {
+    fun onEvent(event: AssessmentListEvent) {
         when (event) {
-            is CommonEvent.FetchAssessments -> {
+            is AssessmentListEvent.FetchAssessments -> {
                 fetchAssessments(patient)
             }
-            is CommonEvent.FetchExercises -> fetchExercises(
-                tenant = event.tenant,
-                testId = event.testId
-            )
-            is CommonEvent.ApplyAssessmentFilter -> {
+
+            is AssessmentListEvent.ApplyAssessmentFilter -> {
                 _assessments.value = getAssessments(
                     searchTerm = event.testId ?: ""
                 )
             }
-            is CommonEvent.ApplyExerciseFilter -> {
-                _exercises.value = getExercises(
-                    testId = event.testId, searchTerm = event.exerciseName
-                )
-            }
-            is CommonEvent.SignOut -> {
+
+            is AssessmentListEvent.SignOut -> {
                 Utilities.savePatient(
                     preferences = preferences,
                     data = Patient(
@@ -90,33 +71,7 @@ class CommonViewModel @Inject constructor(
                     )
                 )
             }
-            else -> {
-
-            }
         }
-    }
-
-    fun getExercise(testId: String, exerciseId: Int): Exercise? {
-        return getExercises(testId = testId).find { it.id == exerciseId }
-    }
-
-    fun loadExercises(tenant: String, testId: String) {
-        if (getExercises(testId = testId).isEmpty()) {
-            fetchExercises(testId = testId, tenant = tenant)
-        } else {
-            searchExercises(testId = testId)
-        }
-    }
-
-    private fun getExercises(testId: String, searchTerm: String = ""): List<Exercise> {
-        var exercises: List<Exercise> = emptyList()
-        originalAssessmentList.find { it.testId == testId }?.let {
-            exercises = it.exercises
-        }
-        if (searchTerm.isNotEmpty()) {
-            exercises = exercises.filter { it.name.contains(searchTerm, ignoreCase = true) }
-        }
-        return exercises.sortedBy { it.name }
     }
 
     private fun getAssessments(searchTerm: String = ""): List<Assessment> {
@@ -145,10 +100,12 @@ class CommonViewModel @Inject constructor(
                             )
                         )
                     }
+
                     is Resource.Loading -> {
                         _isAssessmentLoading.value = true
                         _showTryAgainButton.value = false
                     }
+
                     is Resource.Success -> {
                         _showTryAgainButton.value = false
                         _isAssessmentLoading.value = false
@@ -157,54 +114,6 @@ class CommonViewModel @Inject constructor(
                     }
                 }
             }.launchIn(this)
-        }
-    }
-
-    private fun searchExercises(testId: String, searchTerm: String = "") {
-        searchCoroutine?.cancel()
-        searchCoroutine = viewModelScope.launch {
-            delay(500L)
-
-            _exercises.value =
-                getExercises(testId = testId, searchTerm = searchTerm)
-        }
-    }
-
-    fun fetchExercises(tenant: String, testId: String) {
-        viewModelScope.launch {
-            exerciseUseCases.fetchExercises(testId = testId, tenant = tenant)
-                .onEach {
-                    when (it) {
-                        is Resource.Error -> {
-                            _isExerciseLoading.value = false
-                            _showTryAgainButton.value = true
-                            _eventFlow.emit(
-                                UIEvent.ShowSnackBar(
-                                    it.message ?: "Failed to load exercise list. Please try again."
-                                )
-                            )
-                        }
-                        is Resource.Loading -> {
-                            _isExerciseLoading.value = true
-                        }
-                        is Resource.Success -> {
-                            it.data?.let { exercises ->
-                                setExerciseList(testId = testId, exercises = exercises)
-                            }
-                            _isExerciseLoading.value = false
-                        }
-                    }
-                }.launchIn(this)
-        }
-    }
-
-    private fun setExerciseList(testId: String, exercises: List<Exercise>) {
-        for (index in 0.._assessments.value.size) {
-            if (_assessments.value[index].testId == testId) {
-                _assessments.value[index].exercises = exercises
-                _exercises.value = exercises.sortedBy { it.name }
-                break
-            }
         }
     }
 }

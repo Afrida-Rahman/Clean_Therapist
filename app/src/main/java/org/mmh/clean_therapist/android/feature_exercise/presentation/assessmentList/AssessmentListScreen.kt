@@ -3,12 +3,28 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.assessment
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DrawerValue
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.rememberDrawerState
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -22,8 +38,6 @@ import org.mmh.clean_therapist.android.core.UIEvent
 import org.mmh.clean_therapist.android.core.component.BottomNavigationBar
 import org.mmh.clean_therapist.android.core.component.CustomTopAppBar
 import org.mmh.clean_therapist.android.core.util.Screen
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonEvent
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.component.AssessmentCard
 import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentList.component.AssessmentFilter
 
@@ -31,7 +45,7 @@ import org.mmh.clean_therapist.android.feature_exercise.presentation.assessmentL
 @Composable
 fun AssessmentListScreen(
     navController: NavController,
-    viewModel: CommonViewModel
+    viewModel: AssessmentListViewModel
 ) {
     val scaffoldState = rememberScaffoldState(
         drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -49,6 +63,7 @@ fun AssessmentListScreen(
                 is UIEvent.ShowSnackBar -> {
                     scaffoldState.snackbarHostState.showSnackbar(event.message)
                 }
+
                 is UIEvent.ShowToastMessage -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
                 }
@@ -77,7 +92,7 @@ fun AssessmentListScreen(
                         AssessmentFilter { testId, bodyRegion ->
                             showAssessmentFilter = false
                             viewModel.onEvent(
-                                CommonEvent.ApplyAssessmentFilter(
+                                AssessmentListEvent.ApplyAssessmentFilter(
                                     testId = testId,
                                     bodyRegion = bodyRegion
                                 )
@@ -104,9 +119,11 @@ fun AssessmentListScreen(
                 localConfiguration.screenWidthDp > 840 -> {
                     3
                 }
+
                 localConfiguration.screenWidthDp > 600 -> {
                     2
                 }
+
                 else -> {
                     1
                 }
@@ -145,15 +162,17 @@ fun AssessmentListScreen(
                     viewModel.isAssessmentLoading.value -> {
                         CircularProgressIndicator()
                     }
+
                     viewModel.showTryAgain.value -> {
                         Button(
                             onClick = {
-                                viewModel.onEvent(CommonEvent.FetchAssessments)
+                                viewModel.onEvent(AssessmentListEvent.FetchAssessments)
                             }
                         ) {
                             Text(text = "Try Again")
                         }
                     }
+
                     else -> {
                         Text(text = "Opps! No assessment found.")
                     }

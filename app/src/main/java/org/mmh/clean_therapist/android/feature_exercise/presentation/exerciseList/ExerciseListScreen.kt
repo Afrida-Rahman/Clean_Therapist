@@ -2,12 +2,28 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseLi
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,7 +32,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.UIEvent
@@ -24,8 +39,6 @@ import org.mmh.clean_therapist.android.core.component.CustomTopAppBar
 import org.mmh.clean_therapist.android.core.component.Pill
 import org.mmh.clean_therapist.android.core.util.Screen
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.toJson
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonEvent
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.component.ExerciseCard
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exerciseList.component.ExerciseFilter
 import org.mmh.clean_therapist.android.ui.theme.Yellow
@@ -36,8 +49,7 @@ fun ExerciseListScreen(
     testId: String,
     creationDate: String,
     navController: NavController,
-    commonViewModel: CommonViewModel,
-    viewModel: ExerciseListViewModel = hiltViewModel()
+    viewModel: ExerciseListViewModel
 ) {
     val scaffoldState = rememberScaffoldState()
     var showExerciseFilter by remember {
@@ -46,17 +58,11 @@ fun ExerciseListScreen(
     val context = LocalContext.current
     val localConfiguration = LocalConfiguration.current
     val itemsPerRow = when {
-        localConfiguration.screenWidthDp > 840 -> {
-            3
-        }
-        localConfiguration.screenWidthDp > 600 -> {
-            2
-        }
-        else -> {
-            1
-        }
+        localConfiguration.screenWidthDp > 840 -> 3
+        localConfiguration.screenWidthDp > 600 -> 2
+        else -> 1
     }
-    commonViewModel.loadExercises(testId = testId, tenant = tenant)
+    viewModel.loadExercises(testId = testId, tenant = tenant)
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
@@ -64,6 +70,7 @@ fun ExerciseListScreen(
                 is UIEvent.ShowSnackBar -> {
                     scaffoldState.snackbarHostState.showSnackbar(event.message)
                 }
+
                 is UIEvent.ShowToastMessage -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
                 }
@@ -88,8 +95,8 @@ fun ExerciseListScreen(
                 extraContent = {
                     AnimatedVisibility(visible = showExerciseFilter) {
                         ExerciseFilter {
-                            commonViewModel.onEvent(
-                                CommonEvent.ApplyExerciseFilter(
+                            viewModel.onEvent(
+                                ExerciseListEvent.ApplyExerciseFilter(
                                     testId = testId,
                                     exerciseName = it
                                 )
@@ -129,7 +136,7 @@ fun ExerciseListScreen(
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
             when {
-                commonViewModel.isExerciseLoading.value -> {
+                viewModel.isExerciseLoading.value -> {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
@@ -137,14 +144,15 @@ fun ExerciseListScreen(
                         CircularProgressIndicator()
                     }
                 }
-                commonViewModel.showTryAgain.value -> {
+
+                viewModel.showTryAgain.value -> {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Button(onClick = {
-                            commonViewModel.onEvent(
-                                CommonEvent.FetchExercises(
+                            viewModel.onEvent(
+                                ExerciseListEvent.FetchExercises(
                                     testId = testId,
                                     tenant = tenant
                                 )
@@ -154,8 +162,9 @@ fun ExerciseListScreen(
                         }
                     }
                 }
+
                 else -> {
-                    commonViewModel.exercises.value?.let { exercises ->
+                    viewModel.exercises.value?.let { exercises ->
                         if (exercises.isNotEmpty()) {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(itemsPerRow),
