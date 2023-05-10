@@ -116,17 +116,9 @@ fun AssessmentListScreen(
         Spacer(modifier = Modifier.height(12.dp))
         if (viewModel.assessments.value.isNotEmpty()) {
             val itemsPerRow = when {
-                localConfiguration.screenWidthDp > 840 -> {
-                    3
-                }
-
-                localConfiguration.screenWidthDp > 600 -> {
-                    2
-                }
-
-                else -> {
-                    1
-                }
+                localConfiguration.screenWidthDp > 840 -> 3
+                localConfiguration.screenWidthDp > 600 -> 2
+                else -> 1
             }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(itemsPerRow),
