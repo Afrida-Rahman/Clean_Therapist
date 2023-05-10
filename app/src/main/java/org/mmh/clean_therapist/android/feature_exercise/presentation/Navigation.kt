@@ -77,8 +77,7 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                             testId = testId,
                             exercise = exercise.replace("\$\$\$", "/")
                                 .fromJson(Exercise::class.java),
-                            navController = navController,
-                            commonViewModel = commonViewModel
+                            navController = navController
                         )
                     }
                 }
@@ -98,6 +97,7 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                 }
             )
         ) {
+            commonViewModel = hiltViewModel()
             it.arguments?.getString("tenant")?.let { tenant ->
                 it.arguments?.getString("testId")?.let { testId ->
                     it.arguments?.getString("exercise")?.let { exercise ->

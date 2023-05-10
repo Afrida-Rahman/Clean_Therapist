@@ -1,12 +1,14 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation.guideline
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -18,7 +20,6 @@ import org.mmh.clean_therapist.android.core.component.CustomTopAppBar
 import org.mmh.clean_therapist.android.core.util.Screen
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.toJson
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.ImageSection
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.InstructionSection
 import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.VideoSection
@@ -28,11 +29,9 @@ fun GuidelineScreen(
     tenant: String,
     testId: String,
     exercise: Exercise,
-    navController: NavController,
-    commonViewModel: CommonViewModel
+    navController: NavController
 ) {
     val scaffoldState = rememberScaffoldState()
-    Log.d(TAG, "GuidelineScreen: $exercise")
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
