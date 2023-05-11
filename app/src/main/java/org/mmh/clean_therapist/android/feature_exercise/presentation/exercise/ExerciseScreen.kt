@@ -76,11 +76,11 @@ fun ExerciseScreen(
             viewModel.wrongCountDisplay = it.findViewById(R.id.wrong_count)
             viewModel.graphicOverlay = it.findViewById(R.id.graphic_overlay)
             viewModel.distanceDisplay = it.findViewById(R.id.distance)
-            viewModel.distanceDisplay = it.findViewById(R.id.phase_dialogue)
+            viewModel.phaseDialogueDisplay = it.findViewById(R.id.phase_dialogue)
             viewModel.exerciseProgressBar = it.findViewById(R.id.exercise_progress)
             viewModel.exerciseProgressBar.max = viewModel.homeExercise.maxRepCount * viewModel.homeExercise.maxSetCount
 
-            viewModel.distanceDisplay.visibility = View.GONE
+//            viewModel.distanceDisplay.visibility = View.GONE
 
             viewModel.cameraSelector =
                 CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()
