@@ -5,11 +5,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.mmh.clean_therapist.android.core.Resource
-import org.mmh.clean_therapist.android.core.UIEvent
-import org.mmh.clean_therapist.android.core.util.Utilities
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
-import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.ExerciseUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -18,6 +13,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.mmh.clean_therapist.android.core.Resource
+import org.mmh.clean_therapist.android.core.UIEvent
+import org.mmh.clean_therapist.android.core.util.Utilities
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
+import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.ExerciseUseCases
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,11 +45,13 @@ class ExerciseListViewModel @Inject constructor(
                 tenant = event.tenant,
                 testId = event.testId
             )
+
             is ExerciseListEvent.ApplyExerciseFilter -> {
                 _exercises.value = getExercises(
                     testId = event.testId, searchTerm = event.exerciseName
                 )
             }
+
             is ExerciseListEvent.SaveDataButtonClicked -> {
                 patient.let {
                     saveExerciseData(
@@ -65,6 +67,7 @@ class ExerciseListViewModel @Inject constructor(
             }
         }
     }
+
     fun getExercise(testId: String, exerciseId: Int): Exercise? {
         return getExercises(testId = testId).find { it.id == exerciseId }
     }
@@ -76,16 +79,19 @@ class ExerciseListViewModel @Inject constructor(
             searchExercises(testId = testId)
         }
     }
+
     private fun getExercises(testId: String, searchTerm: String = ""): List<Exercise> {
         var exercises: List<Exercise> = originalExerciseList
 //        originalAssessmentList.find { it.testId == testId }?.let {
 //            exercises = it.exercises
 //        }
         if (searchTerm.isNotEmpty()) {
-            exercises = originalExerciseList.filter { it.name.contains(searchTerm, ignoreCase = true) }
+            exercises =
+                originalExerciseList.filter { it.name.contains(searchTerm, ignoreCase = true) }
         }
         return exercises.sortedBy { it.name }
     }
+
     private fun searchExercises(testId: String, searchTerm: String = "") {
         searchCoroutine?.cancel()
         searchCoroutine = viewModelScope.launch {
@@ -110,11 +116,13 @@ class ExerciseListViewModel @Inject constructor(
                                 )
                             )
                         }
+
                         is Resource.Loading -> {
                             _isExerciseLoading.value = true
                         }
+
                         is Resource.Success -> {
-                            originalExerciseList = it.data?: emptyList()
+                            originalExerciseList = it.data ?: emptyList()
                             it.data?.let { exercises ->
 //                                setExerciseList(testId = testId, exercises = exercises)
                                 _exercises.value = exercises.sortedBy { it.name }
@@ -126,7 +134,7 @@ class ExerciseListViewModel @Inject constructor(
         }
     }
 
-//    private fun setExerciseList(testId: String, exercises: List<Exercise>) {
+    //    private fun setExerciseList(testId: String, exercises: List<Exercise>) {
 //        for (index in 0.._assessments.value.size) {
 //            if (_assessments.value[index].testId == testId) {
 //                _assessments.value[index].exercises = exercises
@@ -162,9 +170,11 @@ class ExerciseListViewModel @Inject constructor(
                             )
                         )
                     }
+
                     is Resource.Loading -> {
                         _eventFlow.emit(UIEvent.ShowToastMessage("Please wait"))
                     }
+
                     is Resource.Success -> {
                         it.data?.let { exerciseTrackingResponse ->
                             _eventFlow.emit(

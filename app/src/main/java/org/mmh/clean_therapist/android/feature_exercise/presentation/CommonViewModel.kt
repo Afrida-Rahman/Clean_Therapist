@@ -19,7 +19,7 @@ import org.mmh.clean_therapist.android.core.util.Utilities
 import org.mmh.clean_therapist.android.feature_authentication.domain.model.Patient
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Assessment
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
-import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.ExerciseUseCases
+import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.ExerciseUseCases
 import javax.inject.Inject
 
 @HiltViewModel
@@ -62,20 +62,24 @@ class CommonViewModel @Inject constructor(
             is CommonEvent.FetchAssessments -> {
                 fetchAssessments(patient)
             }
+
             is CommonEvent.FetchExercises -> fetchExercises(
                 tenant = event.tenant,
                 testId = event.testId
             )
+
             is CommonEvent.ApplyAssessmentFilter -> {
                 _assessments.value = getAssessments(
                     searchTerm = event.testId ?: ""
                 )
             }
+
             is CommonEvent.ApplyExerciseFilter -> {
                 _exercises.value = getExercises(
                     testId = event.testId, searchTerm = event.exerciseName
                 )
             }
+
             is CommonEvent.SignOut -> {
                 Utilities.savePatient(
                     preferences = preferences,
@@ -90,6 +94,7 @@ class CommonViewModel @Inject constructor(
                     )
                 )
             }
+
             else -> {
 
             }
@@ -145,10 +150,12 @@ class CommonViewModel @Inject constructor(
                             )
                         )
                     }
+
                     is Resource.Loading -> {
                         _isAssessmentLoading.value = true
                         _showTryAgainButton.value = false
                     }
+
                     is Resource.Success -> {
                         _showTryAgainButton.value = false
                         _isAssessmentLoading.value = false
@@ -184,9 +191,11 @@ class CommonViewModel @Inject constructor(
                                 )
                             )
                         }
+
                         is Resource.Loading -> {
                             _isExerciseLoading.value = true
                         }
+
                         is Resource.Success -> {
                             it.data?.let { exercises ->
                                 setExerciseList(testId = testId, exercises = exercises)

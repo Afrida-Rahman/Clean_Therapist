@@ -16,7 +16,7 @@ import org.mmh.clean_therapist.android.core.UIEvent
 import org.mmh.clean_therapist.android.core.util.Utilities
 import org.mmh.clean_therapist.android.feature_authentication.domain.model.Patient
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Assessment
-import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.ExerciseUseCases
+import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.ExerciseUseCases
 import javax.inject.Inject
 
 @HiltViewModel

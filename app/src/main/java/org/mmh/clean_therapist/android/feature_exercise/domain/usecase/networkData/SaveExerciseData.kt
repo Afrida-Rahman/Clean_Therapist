@@ -1,13 +1,13 @@
-package org.mmh.clean_therapist.android.feature_exercise.domain.usecase
+package org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.core.util.Utilities
 import org.mmh.clean_therapist.android.feature_exercise.data.dto.ExerciseTrackingDto
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.payload.ExerciseTrackingPayload
 import org.mmh.clean_therapist.android.feature_exercise.domain.repository.RemoteExerciseTrackingRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
