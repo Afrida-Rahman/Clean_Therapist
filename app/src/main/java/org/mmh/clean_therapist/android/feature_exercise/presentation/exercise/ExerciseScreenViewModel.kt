@@ -2,7 +2,6 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraAccessException
@@ -22,22 +21,16 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.google.mlkit.common.MlKitException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
-import org.mmh.clean_therapist.android.core.UIEvent
-import org.mmh.clean_therapist.android.core.util.Utilities
-import org.mmh.clean_therapist.android.feature_authentication.presentation.sign_in.SignInEvent
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.Exercises
@@ -56,11 +49,6 @@ class ExerciseScreenViewModel @Inject constructor(
 
     private lateinit var exercise: Exercise
     lateinit var homeExercise: HomeExercise
-
-    private val _showPauseBtn = mutableStateOf(false)
-    val showPauseBtn: State<Boolean> = _showPauseBtn
-    private val _showResumeBtn = mutableStateOf(false)
-    val showResumeBtn: State<Boolean> = _showResumeBtn
 
     lateinit var countDisplay: TextView
     lateinit var maxHoldTimeDisplay: TextView
@@ -184,7 +172,7 @@ class ExerciseScreenViewModel @Inject constructor(
                 val characteristics = manager.getCameraCharacteristics(cameraId)
                 homeExercise.setFocalLength(characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS))
             }
-        } catch (_: CameraAccessException) {
+        } catch (e: CameraAccessException) {
 
         }
         imageProcessor =
@@ -290,13 +278,13 @@ class ExerciseScreenViewModel @Inject constructor(
         )
     }
 
-    fun setExerciseConstraints(context: Context, tenant: String, exercise: Exercise, navController: NavController) {
+    fun setExerciseConstraints(context: Context, tenant: String, exercise: Exercise) {
         this.exercise = exercise
         val existingExercise = Exercises.get(context, exercise.id)
         homeExercise = existingExercise ?: GeneralExercise(
             context = context, exerciseId = exercise.id, active = true
         )
-        fetchExerciseConstraints(tenant, context, navController)
+        fetchExerciseConstraints(tenant)
         homeExercise.setExercise(
             exerciseName = exercise.name,
             exerciseInstruction = "",
@@ -308,14 +296,13 @@ class ExerciseScreenViewModel @Inject constructor(
         )
     }
 
-    private fun fetchExerciseConstraints(tenant: String, context: Context, navController: NavController) {
+    private fun fetchExerciseConstraints(tenant: String) {
         viewModelScope.launch {
             exerciseUseCases.fetchExerciseConstraints(tenant = tenant, exerciseId = exercise.id)
                 .onEach {
                     when (it) {
                         is Resource.Error -> {
-                            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
-                            navController.popBackStack()
+
                         }
                         is Resource.Loading -> {
 
@@ -353,18 +340,6 @@ class ExerciseScreenViewModel @Inject constructor(
             arrayOf(
                 Manifest.permission.CAMERA
             )
-    }
-
-    fun onEvent(event: ExerciseEvent) {
-        when (event) {
-            is ExerciseEvent.ShowPauseBtn -> {
-                _showPauseBtn.value = !showPauseBtn.value
-                Log.d(TAG, "onEvent: $_showResumeBtn ->> ${showPauseBtn.value}")
-            }
-            is ExerciseEvent.ShowResumeBtn -> {
-                _showResumeBtn.value = !showResumeBtn.value
-            }
-        }
     }
 
 }

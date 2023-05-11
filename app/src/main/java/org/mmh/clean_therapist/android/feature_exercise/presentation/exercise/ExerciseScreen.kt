@@ -1,10 +1,10 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.app.Application
-import android.content.ContentValues.TAG
-import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraInfoUnavailableException
@@ -43,11 +43,7 @@ fun ExerciseScreen(
     val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
 
-    var pauseButton: Button? = null
-    var resumeButton: Button? = null
-    var pauseIndicator: ImageView? = null
-
-    viewModel.setExerciseConstraints(context, tenant, exercise, navController)
+    viewModel.setExerciseConstraints(context, tenant, exercise)
 
     val application = context.applicationContext as Application
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -65,7 +61,7 @@ fun ExerciseScreen(
     val scaffoldState = rememberScaffoldState()
 
     if (showDialog.value) {
-        Alert(urls = exercise.imageURLs,
+        Alert(name = "Name",
             showDialog = showDialog.value,
             onDismiss = {showDialog.value = false})
     }
@@ -82,9 +78,6 @@ fun ExerciseScreen(
             viewModel.distanceDisplay = it.findViewById(R.id.distance)
             viewModel.phaseDialogueDisplay = it.findViewById(R.id.phase_dialogue)
             viewModel.exerciseProgressBar = it.findViewById(R.id.exercise_progress)
-            pauseButton = it.findViewById(R.id.btn_pause)
-            resumeButton = it.findViewById(R.id.btn_resume)
-            pauseIndicator = it.findViewById(R.id.pause_indicator)
             viewModel.exerciseProgressBar.max = viewModel.homeExercise.maxRepCount * viewModel.homeExercise.maxSetCount
 
 //            viewModel.distanceDisplay.visibility = View.GONE
@@ -136,22 +129,8 @@ fun ExerciseScreen(
                 }
             it.findViewById<ImageButton>(R.id.btn_gif_display)
                 .setOnClickListener{showDialog.value = true}
-            pauseButton?.setOnClickListener{viewModel.onEvent(ExerciseEvent.ShowPauseBtn)}
         }
     )
-    if (viewModel.showPauseBtn.value){
-        Log.d(TAG, "ExerciseScreen: hereeee")
-        pauseButton?.visibility = View.GONE
-        resumeButton?.visibility = View.VISIBLE
-        pauseIndicator?.visibility = View.VISIBLE
-        viewModel.homeExercise.pauseExercise()
-    }
-    if (viewModel.showResumeBtn.value){
-        resumeButton?.visibility = View.GONE
-        pauseButton?.visibility = View.VISIBLE
-        pauseIndicator?.visibility = View.GONE
-        viewModel.homeExercise.resumeExercise()
-    }
     DisposableEffect(lifecycleOwner){
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME){
@@ -183,7 +162,8 @@ fun ExerciseScreen(
 }
 
 @Composable
-fun Alert(urls : List<String> , showDialog: Boolean, onDismiss: () -> Unit) {
+fun Alert(name: String, showDialog: Boolean, onDismiss: () -> Unit) {
+    var urls : List<String> = listOf("https://mmhva.s3.amazonaws.com/Images%2fRS%2fEvalExercise%2f78b269fe-e9d6-4d2f-a191-d064a95b6df6.png", "https://mmhva.s3.amazonaws.com/Images%2fRS%2fEvalExercise%2f0481b0cb-09a9-4430-bf02-af585e8f42e7.png", "https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+abduction+in+standing-e1122b9f-93ab-4ae9-b934-dc7ee6184716.gif")
     if (showDialog) {
         AlertDialog(
             text = {

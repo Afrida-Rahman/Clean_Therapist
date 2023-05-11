@@ -22,25 +22,19 @@ class FetchExerciseConstraints @Inject constructor(
     ): Flow<Resource<List<Phase>>> = flow {
         emit(Resource.Loading())
         try {
+            Log.d(TAG, "invoke: $exerciseId")
             val exercisePhaseDto = repository.fetchExerciseConstraints(
                 payload = ExerciseConstraintPayload(
                     tenant = tenant,
                     exerciseId = exerciseId
                 )
             )
-            if (exercisePhaseDto.phases.isEmpty()) {
-                emit(
-                    Resource.Error(
-                        "Exercise data not available!"
-                    )
+            Log.d(TAG, "invoke: ${exercisePhaseDto.toPhaseList()}")
+            emit(
+                Resource.Success(
+                    exercisePhaseDto.toPhaseList()
                 )
-            } else {
-                emit(
-                    Resource.Success(
-                        exercisePhaseDto.toPhaseList()
-                    )
-                )
-            }
+            )
         } catch (e: IOException) {
             emit(Resource.Error("Could not reach to the server"))
         } catch (e: HttpException) {
