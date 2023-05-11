@@ -1,7 +1,5 @@
 package org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.mmh.clean_therapist.android.core.Resource

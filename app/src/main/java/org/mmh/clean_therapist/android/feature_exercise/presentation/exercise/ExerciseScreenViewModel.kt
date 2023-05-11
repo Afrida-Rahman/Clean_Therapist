@@ -2,7 +2,6 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraAccessException
@@ -22,12 +21,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.navigation.NavController
 import com.google.mlkit.common.MlKitException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,9 +30,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
-import org.mmh.clean_therapist.android.core.UIEvent
-import org.mmh.clean_therapist.android.core.util.Utilities
-import org.mmh.clean_therapist.android.feature_authentication.presentation.sign_in.SignInEvent
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.Exercises
@@ -58,10 +50,10 @@ class ExerciseScreenViewModel @Inject constructor(
     private lateinit var exercise: Exercise
     lateinit var homeExercise: HomeExercise
 
-    private val _showPauseBtn = mutableStateOf(false)
-    val showPauseBtn: State<Boolean> = _showPauseBtn
-    private val _showResumeBtn = mutableStateOf(false)
-    val showResumeBtn: State<Boolean> = _showResumeBtn
+    private val _showPauseBtn = MutableLiveData(true)
+    val showPauseBtn: LiveData<Boolean> = _showPauseBtn
+    private val _showResumeBtn = MutableLiveData(false)
+    val showResumeBtn: LiveData<Boolean> = _showResumeBtn
 
     lateinit var countDisplay: TextView
     lateinit var maxHoldTimeDisplay: TextView
@@ -257,7 +249,7 @@ class ExerciseScreenViewModel @Inject constructor(
                             it.instruction?.let { dialogue ->
                                 if (dialogue.isNotEmpty()) {
                                     if (::phaseDialogueDisplay.isInitialized) {
-                                        homeExercise.getPersonDistance(person).let {distance ->
+                                        homeExercise.getPersonDistance(person).let { distance ->
                                             distanceDisplay.text = "%.1f".format(distance)
                                             if (distance <= 5f) {
                                                 phaseDialogueDisplay.textSize = 30f
@@ -292,7 +284,12 @@ class ExerciseScreenViewModel @Inject constructor(
         )
     }
 
-    fun setExerciseConstraints(context: Context, tenant: String, exercise: Exercise, navController: NavController) {
+    fun setExerciseConstraints(
+        context: Context,
+        tenant: String,
+        exercise: Exercise,
+        navController: NavController
+    ) {
         this.exercise = exercise
         val existingExercise = Exercises.get(context, exercise.id)
         homeExercise = existingExercise ?: GeneralExercise(
@@ -310,7 +307,11 @@ class ExerciseScreenViewModel @Inject constructor(
         )
     }
 
-    private fun fetchExerciseConstraints(tenant: String, context: Context, navController: NavController) {
+    private fun fetchExerciseConstraints(
+        tenant: String,
+        context: Context,
+        navController: NavController
+    ) {
         viewModelScope.launch {
             exerciseUseCases.fetchExerciseConstraints(tenant = tenant, exerciseId = exercise.id)
                 .onEach {
@@ -326,15 +327,13 @@ class ExerciseScreenViewModel @Inject constructor(
 
                         is Resource.Success -> {
                             it.data?.let { phases ->
-                                if (phases != null) {
-                                    exercise.phases = phases
-                                    homeExercise.setConsideredIndices(phases)
-                                    homeExercise.rightCountPhases =
-                                        phases.sortedBy { it -> it.id } as MutableList<Phase>
-                                    homeExercise.rightCountPhases =
-                                        homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList())
-                                            .toMutableList()
-                                }
+                                exercise.phases = phases
+                                homeExercise.setConsideredIndices(phases)
+                                homeExercise.rightCountPhases =
+                                    phases.sortedBy { it -> it.id } as MutableList<Phase>
+                                homeExercise.rightCountPhases =
+                                    homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList())
+                                        .toMutableList()
 
                             }
                         }
@@ -364,13 +363,11 @@ class ExerciseScreenViewModel @Inject constructor(
 
     fun onEvent(event: ExerciseEvent) {
         when (event) {
-            is ExerciseEvent.ShowPauseBtn -> {
-                _showPauseBtn.value = !showPauseBtn.value
-                Log.d(TAG, "onEvent: $_showResumeBtn ->> ${showPauseBtn.value}")
+            is ExerciseEvent.PauseResumeExercise -> {
+                _showPauseBtn.value = !showPauseBtn.value!!
+                _showResumeBtn.value = !showResumeBtn.value!!
             }
-            is ExerciseEvent.ShowResumeBtn -> {
-                _showResumeBtn.value = !showResumeBtn.value
-            }
+            else -> {}
         }
     }
 

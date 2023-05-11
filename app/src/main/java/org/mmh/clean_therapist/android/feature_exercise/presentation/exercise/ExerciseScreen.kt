@@ -1,8 +1,6 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.app.Application
-import android.content.ContentValues.TAG
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -16,6 +14,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -40,6 +39,8 @@ fun ExerciseScreen(
     commonViewModel: CommonViewModel,
     viewModel: ExerciseScreenViewModel = hiltViewModel()
 ) {
+    val showPauseBtn: Boolean by viewModel.showPauseBtn.observeAsState(initial = true)
+    val showResumeBtn: Boolean by viewModel.showPauseBtn.observeAsState(initial = false)
     val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
 
@@ -67,7 +68,7 @@ fun ExerciseScreen(
     if (showDialog.value) {
         Alert(urls = exercise.imageURLs,
             showDialog = showDialog.value,
-            onDismiss = {showDialog.value = false})
+            onDismiss = { showDialog.value = false })
     }
     AndroidView(factory = {
         View.inflate(it, R.layout.activity_exercise_screen, null)
@@ -85,9 +86,8 @@ fun ExerciseScreen(
             pauseButton = it.findViewById(R.id.btn_pause)
             resumeButton = it.findViewById(R.id.btn_resume)
             pauseIndicator = it.findViewById(R.id.pause_indicator)
-            viewModel.exerciseProgressBar.max = viewModel.homeExercise.maxRepCount * viewModel.homeExercise.maxSetCount
-
-//            viewModel.distanceDisplay.visibility = View.GONE
+            viewModel.exerciseProgressBar.max =
+                viewModel.homeExercise.maxRepCount * viewModel.homeExercise.maxSetCount
 
             viewModel.cameraSelector =
                 CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()
@@ -102,7 +102,7 @@ fun ExerciseScreen(
                     viewModel.cameraProvider = provider
                     viewModel.bindAllCameraUseCases(context, lifecycleOwner)
                 }
-            val exerciseNameTV:TextView = it.findViewById(R.id.exercise_name)
+            val exerciseNameTV: TextView = it.findViewById(R.id.exercise_name)
             exerciseNameTV.text = exercise.name
             it.findViewById<ImageButton>(R.id.camera_switch_button)
                 .setOnClickListener {
@@ -135,26 +135,36 @@ fun ExerciseScreen(
                         .show()
                 }
             it.findViewById<ImageButton>(R.id.btn_gif_display)
-                .setOnClickListener{showDialog.value = true}
-            pauseButton?.setOnClickListener{viewModel.onEvent(ExerciseEvent.ShowPauseBtn)}
+                .setOnClickListener { showDialog.value = true }
+            pauseButton?.setOnClickListener {
+                pauseButton?.visibility = View.GONE
+                resumeButton?.visibility = View.VISIBLE
+                pauseIndicator?.visibility = View.VISIBLE
+                viewModel.homeExercise.pauseExercise()
+//                viewModel.onEvent(ExerciseEvent.PauseResumeExercise)
+            }
+            resumeButton?.setOnClickListener {
+                resumeButton?.visibility = View.GONE
+                pauseIndicator?.visibility = View.GONE
+                pauseButton?.visibility = View.VISIBLE
+                viewModel.homeExercise.resumeExercise()
+            }
+
         }
     )
-    if (viewModel.showPauseBtn.value){
-        Log.d(TAG, "ExerciseScreen: hereeee")
-        pauseButton?.visibility = View.GONE
-        resumeButton?.visibility = View.VISIBLE
-        pauseIndicator?.visibility = View.VISIBLE
-        viewModel.homeExercise.pauseExercise()
-    }
-    if (viewModel.showResumeBtn.value){
-        resumeButton?.visibility = View.GONE
-        pauseButton?.visibility = View.VISIBLE
-        pauseIndicator?.visibility = View.GONE
-        viewModel.homeExercise.resumeExercise()
-    }
-    DisposableEffect(lifecycleOwner){
+//    if (showPauseBtn){
+//        "Pause".also { pauseButton?.text = it }
+//        viewModel.homeExercise.resumeExercise()
+//    }
+//
+//    if (showResumeBtn){
+//        "Resume".also { pauseButton?.text = it }
+//        viewModel.homeExercise.pauseExercise()
+//    }
+
+    DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME){
+            if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.onResume(context, lifecycleOwner)
             } else if (event == Lifecycle.Event.ON_PAUSE) {
                 viewModel.onPause()
@@ -183,7 +193,7 @@ fun ExerciseScreen(
 }
 
 @Composable
-fun Alert(urls : List<String> , showDialog: Boolean, onDismiss: () -> Unit) {
+fun Alert(urls: List<String>, showDialog: Boolean, onDismiss: () -> Unit) {
     if (showDialog) {
         AlertDialog(
             text = {
@@ -191,7 +201,7 @@ fun Alert(urls : List<String> , showDialog: Boolean, onDismiss: () -> Unit) {
             },
             onDismissRequest = onDismiss,
             confirmButton = {
-                TextButton(onClick = onDismiss ) {
+                TextButton(onClick = onDismiss) {
                     Text("OK")
                 }
             },
