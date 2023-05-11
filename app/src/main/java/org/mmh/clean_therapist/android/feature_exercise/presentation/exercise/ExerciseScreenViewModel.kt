@@ -40,12 +40,13 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.Pose
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.PreferenceUtils
-import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.ExerciseUseCases
+import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.ExerciseUseCases
 import javax.inject.Inject
 
 @HiltViewModel
 class ExerciseScreenViewModel @Inject constructor(
-    private val exerciseUseCases: ExerciseUseCases) : ViewModel() {
+    private val exerciseUseCases: ExerciseUseCases
+) : ViewModel() {
 
     private lateinit var exercise: Exercise
     lateinit var homeExercise: HomeExercise
@@ -59,6 +60,7 @@ class ExerciseScreenViewModel @Inject constructor(
 
     @SuppressLint("StaticFieldLeak")
     var previewView: PreviewView? = null
+
     @SuppressLint("StaticFieldLeak")
     var graphicOverlay: GraphicOverlay? = null
     var cameraProvider: ProcessCameraProvider? = null
@@ -238,7 +240,7 @@ class ExerciseScreenViewModel @Inject constructor(
                         exerciseProgressBar.progress =
                             homeExercise.getSetCount() * homeExercise.maxRepCount + homeExercise.getRepetitionCount()
                         wrongCountDisplay.text =
-                        "%d".format(homeExercise.getWrongCount())
+                            "%d".format(homeExercise.getWrongCount())
                         homeExercise.getPhase()?.let {
                             it.instruction?.let { dialogue ->
                                 if (dialogue.isNotEmpty()) {
@@ -304,16 +306,21 @@ class ExerciseScreenViewModel @Inject constructor(
                         is Resource.Error -> {
 
                         }
+
                         is Resource.Loading -> {
 
                         }
+
                         is Resource.Success -> {
                             it.data?.let { phases ->
-                                if (phases != null){
+                                if (phases != null) {
                                     exercise.phases = phases
                                     homeExercise.setConsideredIndices(phases)
-                                    homeExercise.rightCountPhases = phases.sortedBy { it -> it.id } as MutableList<Phase>
-                                    homeExercise.rightCountPhases = homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList()).toMutableList()
+                                    homeExercise.rightCountPhases =
+                                        phases.sortedBy { it -> it.id } as MutableList<Phase>
+                                    homeExercise.rightCountPhases =
+                                        homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList())
+                                            .toMutableList()
                                 }
 
                             }

@@ -18,6 +18,7 @@ import org.mmh.clean_therapist.android.feature_authentication.domain.usecase.*
 import org.mmh.clean_therapist.android.feature_exercise.domain.repository.RemoteAssessmentRepository
 import org.mmh.clean_therapist.android.feature_exercise.domain.repository.RemoteExerciseTrackingRepository
 import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.*
+import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit

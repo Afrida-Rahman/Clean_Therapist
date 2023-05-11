@@ -1,4 +1,4 @@
-package org.mmh.clean_therapist.android.feature_exercise.domain.usecase
+package org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData
 
 import android.content.ContentValues.TAG
 import android.util.Log
