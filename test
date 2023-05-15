@@ -1,0 +1,234 @@
+Phase(phaseNumber=1, 
+    constraints=[
+        Constraint(type=ANGLE, startPointIndex=7, middlePointIndex=5, endPointIndex=11, clockWise=false, color=-1, minValue=1, maxValue=35, looseMin=1, looseMax=35, standardMin=5, standardMax=30, storedValues=[]), 
+        Constraint(type=ANGLE, startPointIndex=8, middlePointIndex=6, endPointIndex=12, clockWise=true, color=-65536, minValue=1, maxValue=35, looseMin=1, looseMax=35, standardMin=5, standardMax=30, storedValues=[])], 
+        holdTime=0, 
+        phaseDialogue=START)
+
+
+[
+    Phase(id=1, 
+        instruction=START, 
+        holdTime=0, 
+        imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+start-97bf0d3b-d917-4041-93d2-b92e23272b3c.jpg, 
+        constraints=[
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=5, maxValidationValue=30), 
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=5, maxValidationValue=30)]), 
+    Phase(id=3, 
+        instruction=BACK DOWN, 
+        holdTime=0, 
+        imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+start-79cc2601-2447-494f-a110-44f01caf12b1.jpg, 
+        constraints=[
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=5, maxValidationValue=30), 
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=5, maxValidationValue=30)]), 
+    Phase(id=2, 
+        instruction=PRESS UP, 
+        holdTime=0, 
+        imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+end-5b875a39-a5a6-41ad-94df-c89b38c7c08f.JPG, 
+        constraints=[
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=160, maxValidationValue=220), 
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=160, maxValidationValue=220)])
+]
+
+
+[
+    Phase(id=1, 
+        instruction=START, 
+        holdTime=0, 
+        imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+start-97bf0d3b-d917-4041-93d2-b92e23272b3c.jpg, 
+        constraints=[
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=5, maxValidationValue=30), 
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=5, maxValidationValue=30)]), 
+    Phase(id=3, 
+        instruction=BACK DOWN, 
+        holdTime=0, 
+        imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+start-79cc2601-2447-494f-a110-44f01caf12b1.jpg, 
+        constraints=[
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=5, maxValidationValue=30), 
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=5, maxValidationValue=30)]), 
+    Phase(id=2, 
+        instruction=PRESS UP, 
+        holdTime=0, 
+        imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+end-5b875a39-a5a6-41ad-94df-c89b38c7c08f.JPG, 
+        constraints=[
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=160, maxValidationValue=220), 
+            LineConstraint(startPointIndex=0, endPointIndex=0, lineType=SOLID, minValidationValue=160, maxValidationValue=220)])
+]
+
+
+
+PhaseDto(exerciseId=605, 
+    phases=[
+        RemotePhase(
+            id=1, 
+            dialogue=START, 
+            holdTime=0, 
+            imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+start-97bf0d3b-d917-4041-93d2-b92e23272b3c.jpg, 
+            constraints=[
+                RemoteConstraint(
+                    scale=degree, 
+                    lineType=solid, 
+                    noOfKeyPoints=3, 
+                    direction=, 
+                    startKeyPosition=left_elbow, 
+                    middleKeyPosition=left_shoulder, 
+                    endKeyPosition=left_hip, 
+                    minValidationValue=5, 
+                    maxValidationValue=30, 
+                    angleArea=anticlockwise, 
+                    shouldDrawExtensionFlexion=false), 
+                RemoteConstraint(
+                    scale=degree, 
+                    lineType=solid, 
+                    noOfKeyPoints=3, 
+                    direction=, 
+                    startKeyPosition=right_elbow, 
+                    middleKeyPosition=right_shoulder, 
+                    endKeyPosition=right_hip, 
+                    minValidationValue=5, 
+                    maxValidationValue=30, 
+                    angleArea=clockwise, 
+                    shouldDrawExtensionFlexion=false)
+                ]), 
+        RemotePhase(
+            id=3, 
+            dialogue=BACK DOWN, 
+            holdTime=0, 
+            imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+start-79cc2601-2447-494f-a110-44f01caf12b1.jpg, 
+            constraints=[
+                RemoteConstraint(
+                    scale=degree, 
+                    lineType=solid, 
+                    noOfKeyPoints=3, 
+                    direction=, 
+                    startKeyPosition=left_elbow, 
+                    middleKeyPosition=left_shoulder, 
+                    endKeyPosition=left_hip, 
+                    minValidationValue=5, 
+                    maxValidationValue=30, 
+                    angleArea=anticlockwise, 
+                    shouldDrawExtensionFlexion=false), 
+                RemoteConstraint(
+                    scale=degree, 
+                    lineType=solid, 
+                    noOfKeyPoints=3, 
+                    direction=, 
+                    startKeyPosition=right_elbow, 
+                    middleKeyPosition=right_shoulder, 
+                    endKeyPosition=right_hip, 
+                    minValidationValue=5, 
+                    maxValidationValue=30, 
+                    angleArea=clockwise, 
+                    shouldDrawExtensionFlexion=false)
+                    ]), 
+        RemotePhase(
+            id=2, 
+            dialogue=PRESS UP, 
+            holdTime=0, 
+            imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+end-5b875a39-a5a6-41ad-94df-c89b38c7c08f.JPG, 
+            constraints=[
+                RemoteConstraint(
+                    scale=degree, 
+                    lineType=solid, 
+                    noOfKeyPoints=3, 
+                    direction=, 
+                    startKeyPosition=right_elbow,
+                    middleKeyPosition=right_shoulder, 
+                    endKeyPosition=right_hip, 
+                    minValidationValue=160, 
+                    maxValidationValue=220, 
+                    angleArea=clockwise, 
+                    shouldDrawExtensionFlexion=false), 
+                RemoteConstraint(
+                    scale=degree, 
+                    lineType=solid, 
+                    noOfKeyPoints=3, 
+                    direction=, 
+                    startKeyPosition=left_elbow, 
+                    middleKeyPosition=left_shoulder, 
+                    endKeyPosition=left_hip, 
+                    minValidationValue=160, 
+                    maxValidationValue=220, 
+                    angleArea=anticlockwise, 
+                    shouldDrawExtensionFlexion=false)
+                    ])
+    ])
+
+
+D/ContentValues: onDraw: 
+[
+    Phase(
+        id=1, 
+        instruction=START, 
+        holdTime=0, 
+        imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+start-97bf0d3b-d917-4041-93d2-b92e23272b3c.jpg, 
+        constraints=[
+            AngleConstraint(
+                startPointIndex=7, 
+                middlePointIndex=5, 
+                endPointIndex=11, 
+                lineType=SOLID, 
+                minValidationValue=5, 
+                maxValidationValue=30, 
+                isClockwise=false, 
+                shouldDrawExtensionFlexion=false
+                ), 
+            AngleConstraint(
+                startPointIndex=8, 
+                middlePointIndex=6, 
+                endPointIndex=12, 
+                lineType=SOLID, 
+                minValidationValue=5, 
+                maxValidationValue=30, 
+                isClockwise=true, 
+                shouldDrawExtensionFlexion=false)]), 
+    Phase(
+        id=3, 
+        instruction=BACK DOWN, 
+        holdTime=0, 
+        imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+start-79cc2601-2447-494f-a110-44f01caf12b1.jpg, 
+        constraints=[
+            AngleConstraint(
+                startPointIndex=7, 
+                middlePointIndex=5, 
+                endPointIndex=11, 
+                lineType=SOLID, 
+                minValidationValue=5, 
+                maxValidationValue=30, 
+                isClockwise=false, 
+                shouldDrawExtensionFlexion=false), 
+            AngleConstraint(
+                startPointIndex=8, 
+                middlePointIndex=6, 
+                endPointIndex=12, 
+                lineType=SOLID, 
+                minValidationValue=5, 
+                maxValidationValue=30, 
+                isClockwise=true, 
+                shouldDrawExtensionFlexion=false)]), 
+        Phase(
+            id=2, 
+            instruction=PRESS UP, 
+            holdTime=0, 
+            imageUrl=https://mmhva.s3.amazonaws.com/EvalExerciseList%2fShoulder+seated+press+neutral+end-5b875a39-a5a6-41ad-94df-c89b38c7c08f.JPG, 
+            constraints=[
+                AngleConstraint(
+                    startPointIndex=8, 
+                    middlePointIndex=6, 
+                    endPointIndex=12, 
+                    lineType=SOLID, 
+                    minValidationValue=160, 
+                    maxValidationValue=220, 
+                    isClockwise=true, 
+                    shouldDrawExtensionFlexion=false), 
+                AngleConstraint(
+                    startPointIndex=7, 
+                    middlePointIndex=5, 
+                    endPointIndex=11, 
+                    lineType=SOLID, 
+                    minValidationValue=160, 
+                    maxValidationValue=220, 
+                    isClockwise=false, 
+                    shouldDrawExtensionFlexion=false)])
+]
+

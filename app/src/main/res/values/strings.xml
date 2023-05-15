@@ -1,3 +1,20 @@
 <resources>
-    <string name="app_name">EmmaVirtualTherapistv2</string>
+    <string name="app_name">Clean_Therapist</string>
+    <string name="exercise_name">Exercise Name</string>
+    <string name="right_count_text">%d/%d</string>
+    <string name="rep_set">rep/set</string>
+    <string name="wrong_text">%d</string>
+    <string name="wrong">wrong</string>
+    <string name="camera_switching_button">Camera Switching Button</string>
+    <string name="max_time_hold">%d</string>
+    <string name="second">second</string>
+    <string name="distance_text">%.1f</string>
+    <string name="feet">feet</string>
+    <color name="nion_green">#aaff00</color>
+    <string name="time_count_text">%d</string>
+    <string name="phase_dialogue">%s</string>
+    <string name="instructions">Instructions</string>
+    <string name="pause">Pause</string>
+    <string name="i_m_done">I\'m Done</string>
+    <string name="resume">Resume</string>
 </resources>
