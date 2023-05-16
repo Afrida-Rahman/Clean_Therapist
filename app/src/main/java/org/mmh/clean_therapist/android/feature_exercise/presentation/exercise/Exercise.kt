@@ -28,6 +28,7 @@ fun ComposableExerciseScreen() {
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
+            .background(color = Color.Black)
     ) {
         var textSize by remember { mutableStateOf(35.sp) }
         Text(
@@ -69,6 +70,8 @@ fun ComposableExerciseScreen() {
                 wrong_display, camera_switch_display,
                 hold_time_display, distance_display,
                 exercise_progress, time_count_display,
+                phase_dialogue, btn_gif_display,
+                pause_indicator,
                 btn_done, btn_container
             ) = createRefs()
             ConstraintLayout(
@@ -102,7 +105,7 @@ fun ComposableExerciseScreen() {
                     Text(
                         text = "rep/set",
                         modifier = Modifier
-                        .fillMaxWidth(),
+                            .fillMaxWidth(),
                         color = Color(0xFF3F5BC6),
                         fontSize = 16.sp,
                         textAlign = TextAlign.Center,
@@ -145,8 +148,10 @@ fun ComposableExerciseScreen() {
                         start.linkTo(wrong_display.end)
                         end.linkTo(hold_time_display.start)
                     }) {
-                    Image(painter = painterResource(R.drawable.ic_flip_camera),
-                        contentDescription = "Camera Switching Button")
+                    Image(
+                        painter = painterResource(R.drawable.ic_flip_camera),
+                        contentDescription = "Camera Switching Button"
+                    )
                 }
                 Column(modifier = Modifier
                     .padding(4.dp)
@@ -219,10 +224,10 @@ fun ComposableExerciseScreen() {
                 text = "%d",
                 modifier = Modifier
                     .padding(end = 15.dp)
-                    .fillMaxSize()
+                    .wrapContentHeight(align = Alignment.CenterVertically)
+                    .wrapContentWidth(align = Alignment.CenterHorizontally)
                     .constrainAs(time_count_display) {
                         bottom.linkTo(btn_done.top)
-                        bottom.linkTo(parent.bottom)
                         end.linkTo(parent.end)
                     },
                 color = colorResource(id = R.color.green_60),
@@ -233,9 +238,10 @@ fun ComposableExerciseScreen() {
                 text = "%s",
                 modifier = Modifier
                     .padding(top = 10.dp, start = 10.dp, end = 10.dp)
-                    .fillMaxSize()
+                    .wrapContentHeight(align = Alignment.CenterVertically)
+                    .wrapContentWidth(align = Alignment.CenterHorizontally)
                     .padding(2.dp)
-                    .constrainAs(time_count_display) {
+                    .constrainAs(phase_dialogue) {
                         top.linkTo(exercise_progress.bottom)
                         start.linkTo(parent.start)
                     },
@@ -243,39 +249,43 @@ fun ComposableExerciseScreen() {
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
             )
-            Image(modifier = Modifier
-                .padding(top = 10.dp, end = 10.dp)
-                .width(50.dp)
-                .height(50.dp)
-                .padding(2.dp)
-                .constrainAs(time_count_display) {
-                    top.linkTo(exercise_progress.bottom)
-                    end.linkTo(parent.end)
-                },painter = painterResource(id = R.drawable.ic_guideline),
-                contentDescription = "Instructions")
-            Image(modifier = Modifier
-                .width(150.dp)
-                .height(150.dp)
-                .constrainAs(time_count_display) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },painter = painterResource(id = R.drawable.ic_pause_video),
-                contentDescription = "Pause")
+            Image(
+                modifier = Modifier
+                    .padding(top = 10.dp, end = 10.dp)
+                    .width(30.dp)
+                    .height(30.dp)
+                    .padding(2.dp)
+                    .constrainAs(btn_gif_display) {
+                        top.linkTo(exercise_progress.bottom)
+                        end.linkTo(parent.end)
+                    }, painter = painterResource(id = R.drawable.ic_guideline),
+                contentDescription = "Instructions"
+            )
+            Image(
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(150.dp)
+                    .constrainAs(pause_indicator) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    }, painter = painterResource(id = R.drawable.ic_pause_video),
+                contentDescription = "Pause"
+            )
             Button(
                 onClick = { /*TODO*/ },
                 colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.blue)),
-                        modifier = Modifier
+                modifier = Modifier
                     .padding(25.dp)
-                    .wrapContentHeight(align = Alignment.CenterVertically)
-                    .wrapContentWidth(align = Alignment.CenterHorizontally)
+                    .height(55.dp)
+                    .width(90.dp)
                     .constrainAs(btn_done) {
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)
                         end.linkTo(btn_container.end)
                     },
-            ){
+            ) {
                 Text(text = "I'm Done")
             }
             Button(
@@ -283,14 +293,14 @@ fun ComposableExerciseScreen() {
                 colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.blue)),
                 modifier = Modifier
                     .padding(start = 40.dp, bottom = 25.dp)
-                    .wrapContentHeight(align = Alignment.CenterVertically)
-                    .wrapContentWidth(align = Alignment.CenterHorizontally)
-                    .constrainAs(btn_done) {
+                    .height(55.dp)
+                    .width(90.dp)
+                    .constrainAs(btn_container) {
                         bottom.linkTo(parent.bottom)
                         start.linkTo(btn_done.start)
                         end.linkTo(parent.end)
                     },
-            ){
+            ) {
                 Text(text = "Pause")
             }
         }
