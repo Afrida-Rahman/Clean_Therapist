@@ -1,13 +1,11 @@
 package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -62,10 +60,9 @@ class ExerciseScreenViewModel @Inject constructor(
     lateinit var phaseDialogueDisplay: TextView
     lateinit var exerciseProgressBar: ProgressBar
 
-    @SuppressLint("StaticFieldLeak")
+
     var previewView: PreviewView? = null
 
-    @SuppressLint("StaticFieldLeak")
     var graphicOverlay: GraphicOverlay? = null
     var cameraProvider: ProcessCameraProvider? = null
     private var previewUseCase: Preview? = null
@@ -74,6 +71,7 @@ class ExerciseScreenViewModel @Inject constructor(
     private var needUpdateGraphicOverlayImageSourceInfo = false
     var lensFacing = CameraSelector.LENS_FACING_BACK
     var cameraSelector: CameraSelector? = null
+    private val requiredPermission = Manifest.permission.CAMERA
 
     @Composable
     fun CheckAndGetPermission(
@@ -81,60 +79,39 @@ class ExerciseScreenViewModel @Inject constructor(
         launcher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
     ) {
         if (!allRuntimePermissionsGranted(context)) {
-            GetRuntimePermissions(context, launcher)
+            GetRuntimePermissions(launcher)
         }
     }
 
     private fun allRuntimePermissionsGranted(context: Context): Boolean {
-        for (permission in REQUIRED_RUNTIME_PERMISSIONS) {
-            permission.let {
-                if (!isPermissionGranted(context, it)) {
-                    return false
-                }
-            }
+        if (!isPermissionGranted(context)) {
+            return false
         }
         return true
     }
 
     @Composable
     private fun GetRuntimePermissions(
-        context: Context,
         launcher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
     ) {
-        val permissionsToRequest = java.util.ArrayList<String>()
-        for (permission in REQUIRED_RUNTIME_PERMISSIONS) {
-            permission.let {
-                if (!isPermissionGranted(context, it)) {
-                    permissionsToRequest.add(permission)
-                }
-            }
-        }
-        println("Required permissions: $REQUIRED_RUNTIME_PERMISSIONS")
-        println("Permissions to request: $permissionsToRequest")
-        for (permission in permissionsToRequest) {
-            SideEffect {
-                println("Requesting: $permission")
-                launcher.launch(permissionsToRequest.toTypedArray())
-            }
+        SideEffect {
+            launcher.launch(arrayOf(requiredPermission))
         }
     }
 
-    private fun isPermissionGranted(context: Context, permission: String): Boolean {
+    private fun isPermissionGranted(context: Context): Boolean {
         if (ContextCompat.checkSelfPermission(
                 context,
-                permission
+                requiredPermission
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            Log.i("CameraPermission", "Permission granted: $permission")
             return true
         }
-        Log.i("CameraPermission", "Permission NOT granted: $permission")
         return false
     }
 
     fun bindAllCameraUseCases(context: Context, lifecycleOwner: LifecycleOwner) {
         if (cameraProvider != null) {
-            // As required by CameraX API, unbinds all use cases before trying to re-bind any of them.
             cameraProvider!!.unbindAll()
             bindPreviewUseCase(context, lifecycleOwner)
             bindAnalysisUseCase(context, lifecycleOwner)
@@ -320,11 +297,6 @@ class ExerciseScreenViewModel @Inject constructor(
                             Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                             navController.popBackStack()
                         }
-
-                        is Resource.Loading -> {
-
-                        }
-
                         is Resource.Success -> {
                             it.data?.let { phases ->
                                 exercise.phases = phases
@@ -353,22 +325,4 @@ class ExerciseScreenViewModel @Inject constructor(
     fun onDestroy() {
         imageProcessor?.run { this.stop() }
     }
-
-    companion object {
-        private val REQUIRED_RUNTIME_PERMISSIONS =
-            arrayOf(
-                Manifest.permission.CAMERA
-            )
-    }
-
-    fun onEvent(event: ExerciseEvent) {
-        when (event) {
-            is ExerciseEvent.PauseResumeExercise -> {
-                _showPauseBtn.value = !showPauseBtn.value!!
-                _showResumeBtn.value = !showResumeBtn.value!!
-            }
-            else -> {}
-        }
-    }
-
 }
