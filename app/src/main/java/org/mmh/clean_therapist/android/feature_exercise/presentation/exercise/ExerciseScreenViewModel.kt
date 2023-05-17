@@ -19,6 +19,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.navigation.NavController
@@ -50,8 +52,8 @@ class ExerciseScreenViewModel @Inject constructor(
 
     private val _showPauseBtn = MutableLiveData(true)
     val showPauseBtn: LiveData<Boolean> = _showPauseBtn
-    private val _showResumeBtn = MutableLiveData(false)
-    val showResumeBtn: LiveData<Boolean> = _showResumeBtn
+    private val _showCongrats = MutableLiveData(false)
+    val showCongrats: LiveData<Boolean> = _showCongrats
 
     lateinit var countDisplay: TextView
     lateinit var maxHoldTimeDisplay: TextView
@@ -189,6 +191,9 @@ class ExerciseScreenViewModel @Inject constructor(
         analysisUseCase?.setAnalyzer(
             ContextCompat.getMainExecutor(context)
         ) { imageProxy: ImageProxy ->
+            if ((homeExercise.getSetCount() >= homeExercise.maxSetCount) && !showCongrats.value!!) {
+                _showCongrats.value = !showCongrats.value!!
+            }
             if (needUpdateGraphicOverlayImageSourceInfo) {
                 val isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT
                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees

@@ -18,6 +18,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -40,7 +41,7 @@ fun ExerciseScreen(
     viewModel: ExerciseScreenViewModel = hiltViewModel()
 ) {
     val showPauseBtn: Boolean by viewModel.showPauseBtn.observeAsState(initial = true)
-    val showResumeBtn: Boolean by viewModel.showPauseBtn.observeAsState(initial = false)
+    val showCongrats: Boolean by viewModel.showCongrats.observeAsState(initial = false)
     val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
 
@@ -152,10 +153,11 @@ fun ExerciseScreen(
 
         }
     )
-//    if (showPauseBtn){
-//        "Pause".also { pauseButton?.text = it }
-//        viewModel.homeExercise.resumeExercise()
-//    }
+    if (showCongrats) {
+        ShowCongrats(onDismiss = {
+            navController.popBackStack()
+        })
+    }
 //
 //    if (showResumeBtn){
 //        "Resume".also { pauseButton?.text = it }
@@ -208,4 +210,22 @@ fun Alert(urls: List<String>, showDialog: Boolean, onDismiss: () -> Unit) {
             dismissButton = {}
         )
     }
+}
+
+@Composable
+fun ShowCongrats(onDismiss: () -> Unit) {
+    AlertDialog(
+        text = {
+            Text(text = "Congratulations! You have successfully completed the exercise. Please be prepared for the next one.",
+                color = colorResource(id = R.color.black)
+            )
+        },
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Ok")
+            }
+        },
+        dismissButton = {}
+    )
 }
