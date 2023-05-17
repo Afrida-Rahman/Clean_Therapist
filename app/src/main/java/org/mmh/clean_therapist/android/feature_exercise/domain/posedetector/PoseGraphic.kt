@@ -10,6 +10,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.BodyPart
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.KeyPoint
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.constraint.AngleConstraint
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils
 
@@ -64,7 +65,7 @@ class PoseGraphic(
         rightPaint.color = Color.YELLOW
     }
 
-    override fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>) : Person? {
+    override fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>, isImageFlipped: Boolean) : Person? {
         val landmarks = pose.allPoseLandmarks
         if (landmarks.isEmpty()) {
             return null
@@ -91,6 +92,8 @@ class PoseGraphic(
 
         for (phase in phases) {
             for (constraint in phase.constraints) {
+                if (constraint is AngleConstraint)
+                    constraint.isImageFlipped = isImageFlipped
                 constraint.draw(draw, person)
             }
         }

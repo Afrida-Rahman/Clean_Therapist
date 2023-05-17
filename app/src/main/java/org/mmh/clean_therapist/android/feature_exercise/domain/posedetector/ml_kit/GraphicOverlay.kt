@@ -39,7 +39,7 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
 
     abstract class Graphic(private val overlay: GraphicOverlay) {
 
-        abstract fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>) : Person?
+        abstract fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>, isImageFlipped: Boolean) : Person?
 
         private fun scale(imagePixel: Float): Float {
             return imagePixel * overlay.scaleFactor
@@ -114,8 +114,8 @@ class GraphicOverlay(context: Context?, attrs: AttributeSet?) :
         synchronized(lock) {
             updateTransformationIfNeeded()
             for (graphic in graphics) {
-                if(graphic.drawBodyKeyPoints(canvas, phases) != null)
-                    person = graphic.drawBodyKeyPoints(canvas, phases)!!
+                if(graphic.drawBodyKeyPoints(canvas, phases, isImageFlipped) != null)
+                    person = graphic.drawBodyKeyPoints(canvas, phases, isImageFlipped)!!
             }
         }
     }

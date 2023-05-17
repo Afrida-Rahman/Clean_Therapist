@@ -12,6 +12,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
 data class AngleConstraint(
     val lineType: LineType = LineType.SOLID,
     val isClockwise: Boolean,
+    var isImageFlipped: Boolean = false,
     val shouldDrawExtensionFlexion: Boolean,
     override val minValidationValue: Int,
     override val maxValidationValue: Int,
@@ -28,11 +29,15 @@ data class AngleConstraint(
             LineType.SOLID -> Paint.Style.FILL
             LineType.DASHED -> Paint.Style.FILL_AND_STROKE
         }
+        var direction: Boolean = isClockwise
+        if (isImageFlipped){
+            direction = !isClockwise
+        }
         val angle = Utilities.angle(
             startPoint = person.keyPoints[startPointIndex].toRealPoint(),
             middlePoint = person.keyPoints[middlePointIndex].toRealPoint(),
             endPoint = person.keyPoints[endPointIndex].toRealPoint(),
-            clockWise = !isClockwise
+            clockWise = direction
         )
         color = if (angle >= minValidationValue && angle <= maxValidationValue) {
             Color.WHITE
@@ -47,7 +52,7 @@ data class AngleConstraint(
             middlePoint = middlePoint,
             endPoint = endPoint,
             lineType = lineStyle,
-            _clockWise = !isClockwise,
+            _clockWise = direction,
             color = color
         )
         draw.circle(startPoint, 4f, startPoint, 360f)
