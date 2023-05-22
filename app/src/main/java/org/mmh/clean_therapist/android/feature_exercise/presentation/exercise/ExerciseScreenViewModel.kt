@@ -196,6 +196,7 @@ class ExerciseScreenViewModel @Inject constructor(
             }
             if (needUpdateGraphicOverlayImageSourceInfo) {
                 val isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT
+                homeExercise.setImageFlipped(isImageFlipped)
                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees
                 if (rotationDegrees == 0 || rotationDegrees == 180) {
                     graphicOverlay!!.setImageSourceInfo(
