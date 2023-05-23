@@ -92,6 +92,11 @@ abstract class HomeExercise(
 
     private val consideredIndices = mutableSetOf<Int>()
 
+    private var isImageFlipped: Boolean = false
+    fun setImageFlipped(imageFlipped: Boolean) {
+        isImageFlipped = imageFlipped
+    }
+
     fun addInstruction(dialogue: String?) {
         dialogue?.let { text ->
             val doesNotExist = instructions.find {
@@ -458,11 +463,15 @@ abstract class HomeExercise(
         var constraintSatisfied = true
         constraints.forEach {
             if(it is AngleConstraint) {
+                var direction: Boolean = it.isClockwise
+                if (isImageFlipped){
+                    direction = !it.isClockwise
+                }
                 val angle = Utilities.angle(
                     startPoint = person.keyPoints[it.startPointIndex].toRealPoint(),
                     middlePoint = person.keyPoints[it.middlePointIndex].toRealPoint(),
                     endPoint = person.keyPoints[it.endPointIndex].toRealPoint(),
-                    clockWise = !it.isClockwise
+                    clockWise = direction
                 )
                 val minValue = min(it.lowestMinValidationValue, it.minValidationValue)
                 val maxValue = max(it.lowestMaxValidationValue, it.maxValidationValue)

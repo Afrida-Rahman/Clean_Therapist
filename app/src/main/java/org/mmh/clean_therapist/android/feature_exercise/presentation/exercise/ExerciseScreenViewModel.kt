@@ -19,10 +19,11 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import androidx.navigation.NavController
 import com.google.mlkit.common.MlKitException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -48,6 +49,11 @@ class ExerciseScreenViewModel @Inject constructor(
 
     private lateinit var exercise: Exercise
     lateinit var homeExercise: HomeExercise
+
+    private val _showPauseBtn = MutableLiveData(true)
+    val showPauseBtn: LiveData<Boolean> = _showPauseBtn
+    private val _showCongrats = MutableLiveData(false)
+    val showCongrats: LiveData<Boolean> = _showCongrats
 
     lateinit var countDisplay: TextView
     lateinit var maxHoldTimeDisplay: TextView
@@ -151,7 +157,7 @@ class ExerciseScreenViewModel @Inject constructor(
                 val characteristics = manager.getCameraCharacteristics(cameraId)
                 homeExercise.setFocalLength(characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS))
             }
-        } catch (e: CameraAccessException) {
+        } catch (_: CameraAccessException) {
 
         }
         imageProcessor =
@@ -185,8 +191,12 @@ class ExerciseScreenViewModel @Inject constructor(
         analysisUseCase?.setAnalyzer(
             ContextCompat.getMainExecutor(context)
         ) { imageProxy: ImageProxy ->
+            if ((homeExercise.getSetCount() >= homeExercise.maxSetCount) && !showCongrats.value!!) {
+                _showCongrats.value = !showCongrats.value!!
+            }
             if (needUpdateGraphicOverlayImageSourceInfo) {
                 val isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT
+                homeExercise.setImageFlipped(isImageFlipped)
                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees
                 if (rotationDegrees == 0 || rotationDegrees == 180) {
                     graphicOverlay!!.setImageSourceInfo(
@@ -257,13 +267,18 @@ class ExerciseScreenViewModel @Inject constructor(
         )
     }
 
-    fun setExerciseConstraints(context: Context, tenant: String, exercise: Exercise) {
+    fun setExerciseConstraints(
+        context: Context,
+        tenant: String,
+        exercise: Exercise,
+        navController: NavController
+    ) {
         this.exercise = exercise
         val existingExercise = Exercises.get(context, exercise.id)
         homeExercise = existingExercise ?: GeneralExercise(
             context = context, exerciseId = exercise.id, active = true
         )
-        fetchExerciseConstraints(tenant)
+        fetchExerciseConstraints(tenant, context, navController)
         homeExercise.setExercise(
             exerciseName = exercise.name,
             exerciseInstruction = "",
@@ -275,22 +290,28 @@ class ExerciseScreenViewModel @Inject constructor(
         )
     }
 
-    private fun fetchExerciseConstraints(tenant: String) {
+    private fun fetchExerciseConstraints(
+        tenant: String,
+        context: Context,
+        navController: NavController
+    ) {
         viewModelScope.launch {
             exerciseUseCases.fetchExerciseConstraints(tenant = tenant, exerciseId = exercise.id)
                 .onEach {
                     when (it) {
+                        is Resource.Error -> {
+                            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        }
                         is Resource.Success -> {
                             it.data?.let { phases ->
-                                if (phases != null) {
-                                    exercise.phases = phases
-                                    homeExercise.setConsideredIndices(phases)
-                                    homeExercise.rightCountPhases =
-                                        phases.sortedBy { it -> it.id } as MutableList<Phase>
-                                    homeExercise.rightCountPhases =
-                                        homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList())
-                                            .toMutableList()
-                                }
+                                exercise.phases = phases
+                                homeExercise.setConsideredIndices(phases)
+                                homeExercise.rightCountPhases =
+                                    phases.sortedBy { it -> it.id } as MutableList<Phase>
+                                homeExercise.rightCountPhases =
+                                    homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList())
+                                        .toMutableList()
 
                             }
                         }
@@ -310,5 +331,4 @@ class ExerciseScreenViewModel @Inject constructor(
     fun onDestroy() {
         imageProcessor?.run { this.stop() }
     }
-
 }

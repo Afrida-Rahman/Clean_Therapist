@@ -9,7 +9,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
 class CameraImageGraphic(overlay: GraphicOverlay, private val bitmap: Bitmap) :
     GraphicOverlay.Graphic(overlay) {
 
-    override fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>) :Person? {
+    override fun drawBodyKeyPoints(canvas: Canvas, phases: List<Phase>, isImageFlipped: Boolean) :Person? {
         canvas.drawBitmap(bitmap, getTransformationMatrix(), null)
         return null
     }
