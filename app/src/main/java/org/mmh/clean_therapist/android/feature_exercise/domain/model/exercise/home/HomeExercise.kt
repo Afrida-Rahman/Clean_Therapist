@@ -10,10 +10,17 @@ import org.mmh.clean_therapist.R
 import org.mmh.clean_therapist.android.core.util.AsyncAudioPlayer
 import org.mmh.clean_therapist.android.core.util.AudioPlayer
 import org.mmh.clean_therapist.android.core.util.Utilities
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.*
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.BodyPart
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Constraint
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Instruction
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Person
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.PhaseSummary
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.Restriction
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.constraint.AngleConstraint
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils.getIndexName
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.ExerciseUtils
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -243,6 +250,7 @@ abstract class HomeExercise(
                     firstInstruction = AsyncAudioPlayer.PLEASE_STAY_INSIDE_BOX
                 )
             }
+
             is CommonInstructionEvent.HandIsNotStraight -> playAudio(R.raw.keep_hand_straight)
             is CommonInstructionEvent.LeftHandIsNotStraight -> playAudio(R.raw.left_hand_straight)
             is CommonInstructionEvent.RightHandIsNotStraight -> playAudio(R.raw.right_hand_straight)
@@ -255,58 +263,65 @@ abstract class HomeExercise(
         canvasHeight: Int,
         canvasWidth: Int
     ) {
-        if (phaseIndex < rightCountPhases.size) {
-            val phase = rightCountPhases[phaseIndex]
-            val minConfidenceSatisfied = isMinConfidenceSatisfied(phase, person)
-            if (rightCountPhases.isNotEmpty() && minConfidenceSatisfied && !takingRest) {
-
-                val constraintSatisfied = isConstraintSatisfied(
-                    person,
-                    phase.constraints
-                )
-                if (setCounter == 0) {
-                    trackMinMaxConstraints(person = person)
-                }
-                if (VisualUtils.isInsideBox(
-                        person,
-                        consideredIndices.toList(),
-                        canvasHeight,
-                        canvasWidth
-                    ) && constraintSatisfied
-                ) {
-                    if (!phaseEntered) {
-                        phaseEntered = true
-                        phaseEnterTime = System.currentTimeMillis()
-                    }
-                    val elapsedTime = ((System.currentTimeMillis() - phaseEnterTime) / 1000).toInt()
-                    downTimeCounter = phase.holdTime - elapsedTime
-                    if (downTimeCounter <= 0) {
-                        if (phaseIndex == rightCountPhases.size - 1) {
-                            phaseIndex = 0
-                            repetitionCount()
-                        } else {
-                            phaseIndex++
-                            rightCountPhases[phaseIndex].instruction?.let {
-                                playInstruction(firstDelay = 500L, firstInstruction = it)
-                            }
-                            downTimeCounter = 0
-                        }
-                    } else {
-                        if (phaseIndex != 0) countDownAudio(downTimeCounter)
-                    }
-                } else {
-                    downTimeCounter = 0
-                    phaseEntered = false
-                }
-                commonInstruction(
-                    person,
-                    rightCountPhases[phaseIndex].constraints,
-                    canvasHeight,
-                    canvasWidth
-                )
-                exerciseInstruction(person)
-            }
-        }
+        ExerciseUtils.rightCount(
+            person,
+            canvasHeight,
+            canvasWidth,
+            rightCountPhases,
+            isImageFlipped
+        )
+//        if (phaseIndex < rightCountPhases.size) {
+//            val phase = rightCountPhases[phaseIndex]
+//            val minConfidenceSatisfied = isMinConfidenceSatisfied(phase, person)
+//            if (rightCountPhases.isNotEmpty() && minConfidenceSatisfied && !takingRest) {
+//
+//                val constraintSatisfied = isConstraintSatisfied(
+//                    person,
+//                    phase.constraints
+//                )
+//                if (setCounter == 0) {
+//                    trackMinMaxConstraints(person = person)
+//                }
+//                if (VisualUtils.isInsideBox(
+//                        person,
+//                        consideredIndices.toList(),
+//                        canvasHeight,
+//                        canvasWidth
+//                    ) && constraintSatisfied
+//                ) {
+//                    if (!phaseEntered) {
+//                        phaseEntered = true
+//                        phaseEnterTime = System.currentTimeMillis()
+//                    }
+//                    val elapsedTime = ((System.currentTimeMillis() - phaseEnterTime) / 1000).toInt()
+//                    downTimeCounter = phase.holdTime - elapsedTime
+//                    if (downTimeCounter <= 0) {
+//                        if (phaseIndex == rightCountPhases.size - 1) {
+//                            phaseIndex = 0
+//                            repetitionCount()
+//                        } else {
+//                            phaseIndex++
+//                            rightCountPhases[phaseIndex].instruction?.let {
+//                                playInstruction(firstDelay = 500L, firstInstruction = it)
+//                            }
+//                            downTimeCounter = 0
+//                        }
+//                    } else {
+//                        if (phaseIndex != 0) countDownAudio(downTimeCounter)
+//                    }
+//                } else {
+//                    downTimeCounter = 0
+//                    phaseEntered = false
+//                }
+//                commonInstruction(
+//                    person,
+//                    rightCountPhases[phaseIndex].constraints,
+//                    canvasHeight,
+//                    canvasWidth
+//                )
+//                exerciseInstruction(person)
+//            }
+//        }
     }
 
     open fun wrongExerciseCount(person: Person, canvasHeight: Int, canvasWidth: Int) {}
@@ -317,7 +332,7 @@ abstract class HomeExercise(
         val indices = mutableSetOf<Int>()
         var isSatisfied = true
         phase.constraints.forEach {
-            if(it is AngleConstraint) {
+            if (it is AngleConstraint) {
                 val angleConstraint = it as AngleConstraint
                 indices.add(angleConstraint.startPointIndex)
                 indices.add(angleConstraint.middlePointIndex)
@@ -462,9 +477,9 @@ abstract class HomeExercise(
     private fun isConstraintSatisfied(person: Person, constraints: List<Constraint>): Boolean {
         var constraintSatisfied = true
         constraints.forEach {
-            if(it is AngleConstraint) {
+            if (it is AngleConstraint) {
                 var direction: Boolean = it.isClockwise
-                if (isImageFlipped){
+                if (isImageFlipped) {
                     direction = !it.isClockwise
                 }
                 val angle = Utilities.angle(
@@ -546,7 +561,7 @@ abstract class HomeExercise(
 
     private fun trackMinMaxConstraints(person: Person) {
         rightCountPhases[trackIndex].constraints.forEach {
-            if(it is AngleConstraint) {
+            if (it is AngleConstraint) {
                 val angle = Utilities.angle(
                     startPoint = person.keyPoints[it.startPointIndex].toRealPoint(),
                     middlePoint = person.keyPoints[it.middlePointIndex].toRealPoint(),

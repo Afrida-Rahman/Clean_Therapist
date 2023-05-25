@@ -19,10 +19,12 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.google.mlkit.common.MlKitException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +42,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_k
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.PreferenceUtils
 import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.ExerciseUseCases
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.ExerciseUtils
 import javax.inject.Inject
 
 @HiltViewModel
@@ -220,7 +223,7 @@ class ExerciseScreenViewModel @Inject constructor(
                         homeExercise.rightExerciseCount(person, imageProxy.height, imageProxy.width)
                         homeExercise.wrongExerciseCount(person, imageProxy.height, imageProxy.width)
                         countDisplay.text = "%d/%d".format(
-                            homeExercise.getRepetitionCount(), homeExercise.getSetCount()
+                            ExerciseUtils.getRepetitionCount(), ExerciseUtils.getSetCount()
                         )
                         maxHoldTimeDisplay.text =
                             "%d".format(homeExercise.getMaxHoldTime())
@@ -303,6 +306,7 @@ class ExerciseScreenViewModel @Inject constructor(
                             Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                             navController.popBackStack()
                         }
+
                         is Resource.Success -> {
                             it.data?.let { phases ->
                                 exercise.phases = phases
