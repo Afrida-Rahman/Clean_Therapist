@@ -19,8 +19,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.navigation.NavController
@@ -32,19 +30,19 @@ import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.Exercises
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home.GeneralExercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home.HomeExercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.PoseDetectorProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.PreferenceUtils
+import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.exercise.PerformExerciseUseCase
 import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.ExerciseUseCases
 import javax.inject.Inject
 
 @HiltViewModel
 class ExerciseScreenViewModel @Inject constructor(
-    private val exerciseUseCases: ExerciseUseCases
+    private val exerciseUseCases: ExerciseUseCases,
+    private val performExerciseUseCase: PerformExerciseUseCase
 ) : ViewModel() {
 
     private lateinit var exercise: Exercise
@@ -196,7 +194,7 @@ class ExerciseScreenViewModel @Inject constructor(
             }
             if (needUpdateGraphicOverlayImageSourceInfo) {
                 val isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT
-                homeExercise.setImageFlipped(isImageFlipped)
+                performExerciseUseCase.setImageOrientation(isImageFlipped)
                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees
                 if (rotationDegrees == 0 || rotationDegrees == 180) {
                     graphicOverlay!!.setImageSourceInfo(
@@ -220,12 +218,12 @@ class ExerciseScreenViewModel @Inject constructor(
                         homeExercise.rightExerciseCount(person, imageProxy.height, imageProxy.width)
                         homeExercise.wrongExerciseCount(person, imageProxy.height, imageProxy.width)
                         countDisplay.text = "%d/%d".format(
-                            homeExercise.getRepetitionCount(), homeExercise.getSetCount()
+                            performExerciseUseCase.getRepetitionCount, homeExercise.getSetCount()
                         )
                         maxHoldTimeDisplay.text =
-                            "%d".format(homeExercise.getMaxHoldTime())
+                            "%d".format(performExerciseUseCase.getMaxHoldTime())
                         exerciseProgressBar.progress =
-                            homeExercise.getSetCount() * homeExercise.maxRepCount + homeExercise.getRepetitionCount()
+                            homeExercise.getSetCount() * homeExercise.maxRepCount + performExerciseUseCase.getRepetitionCount()
                         wrongCountDisplay.text =
                             "%d".format(homeExercise.getWrongCount())
                         homeExercise.getPhase()?.let {
@@ -274,12 +272,9 @@ class ExerciseScreenViewModel @Inject constructor(
         navController: NavController
     ) {
         this.exercise = exercise
-        val existingExercise = Exercises.get(context, exercise.id)
-        homeExercise = existingExercise ?: GeneralExercise(
-            context = context, exerciseId = exercise.id, active = true
-        )
+        performExerciseUseCase.initExercise(context, exercise.id, true)
         fetchExerciseConstraints(tenant, context, navController)
-        homeExercise.setExercise(
+        performExerciseUseCase.setExerciseDetails(
             exerciseName = exercise.name,
             exerciseInstruction = "",
             exerciseImageUrls = listOf(),
@@ -306,7 +301,7 @@ class ExerciseScreenViewModel @Inject constructor(
                         is Resource.Success -> {
                             it.data?.let { phases ->
                                 exercise.phases = phases
-                                homeExercise.setConsideredIndices(phases)
+                                performExerciseUseCase.setConsideredIndices(phases)
                                 homeExercise.rightCountPhases =
                                     phases.sortedBy { it -> it.id } as MutableList<Phase>
                                 homeExercise.rightCountPhases =
