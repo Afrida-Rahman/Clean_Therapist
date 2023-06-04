@@ -15,8 +15,6 @@ import org.mmh.clean_therapist.android.feature_authentication.data.repository.Lo
 import org.mmh.clean_therapist.android.feature_authentication.domain.repository.LocalPatientRepository
 import org.mmh.clean_therapist.android.feature_authentication.domain.repository.RemotePatientRepository
 import org.mmh.clean_therapist.android.feature_authentication.domain.usecase.*
-import org.mmh.clean_therapist.android.feature_exercise.data.repository.ExerciseRepositoryImpl
-import org.mmh.clean_therapist.android.feature_exercise.domain.repository.ExerciseRepository
 import org.mmh.clean_therapist.android.feature_exercise.domain.repository.RemoteAssessmentRepository
 import org.mmh.clean_therapist.android.feature_exercise.domain.repository.RemoteExerciseTrackingRepository
 import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.*
@@ -120,22 +118,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideExerciseRepository(application: Application): ExerciseRepository {
-        return ExerciseRepositoryImpl()
-    }
-
-    @Provides
-    @Singleton
     fun providesPerformExerciseUseCase(
-        exerciseRepository: ExerciseRepository
     ): PerformExerciseUseCase {
         return PerformExerciseUseCase(
-            initExercise = InitExercise(exerciseRepository),
-            setImageOrientation = SetImageOrientation(exerciseRepository),
-            setExerciseDetails = SetExerciseDetails(exerciseRepository),
-            setConsideredIndices = SetConsideredIndices(exerciseRepository),
-            getMaxHoldTime = GetMaxHoldTime(exerciseRepository),
-            getRepetitionCount = GetRepetitionCount(exerciseRepository)
+            evaluateExercise = EvaluateExercise()
         )
     }
 

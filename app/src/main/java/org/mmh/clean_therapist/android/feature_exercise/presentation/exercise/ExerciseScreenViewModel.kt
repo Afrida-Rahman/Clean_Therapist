@@ -30,6 +30,8 @@ import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.Exercises
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home.GeneralExercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home.HomeExercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.PoseDetectorProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
@@ -113,6 +115,7 @@ class ExerciseScreenViewModel @Inject constructor(
     fun bindAllCameraUseCases(context: Context, lifecycleOwner: LifecycleOwner) {
         if (cameraProvider != null) {
             cameraProvider!!.unbindAll()
+            performExerciseUseCase.evaluateExercise()
             bindPreviewUseCase(context, lifecycleOwner)
             bindAnalysisUseCase(context, lifecycleOwner)
         }
@@ -194,7 +197,7 @@ class ExerciseScreenViewModel @Inject constructor(
             }
             if (needUpdateGraphicOverlayImageSourceInfo) {
                 val isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT
-                performExerciseUseCase.setImageOrientation(isImageFlipped)
+                homeExercise.setImageFlipped(isImageFlipped)
                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees
                 if (rotationDegrees == 0 || rotationDegrees == 180) {
                     graphicOverlay!!.setImageSourceInfo(
@@ -218,12 +221,12 @@ class ExerciseScreenViewModel @Inject constructor(
                         homeExercise.rightExerciseCount(person, imageProxy.height, imageProxy.width)
                         homeExercise.wrongExerciseCount(person, imageProxy.height, imageProxy.width)
                         countDisplay.text = "%d/%d".format(
-                            performExerciseUseCase.getRepetitionCount, homeExercise.getSetCount()
+                            homeExercise.getRepetitionCount(), homeExercise.getSetCount()
                         )
                         maxHoldTimeDisplay.text =
-                            "%d".format(performExerciseUseCase.getMaxHoldTime())
+                            "%d".format(homeExercise.getMaxHoldTime())
                         exerciseProgressBar.progress =
-                            homeExercise.getSetCount() * homeExercise.maxRepCount + performExerciseUseCase.getRepetitionCount()
+                            homeExercise.getSetCount() * homeExercise.maxRepCount + homeExercise.getRepetitionCount()
                         wrongCountDisplay.text =
                             "%d".format(homeExercise.getWrongCount())
                         homeExercise.getPhase()?.let {
@@ -272,9 +275,12 @@ class ExerciseScreenViewModel @Inject constructor(
         navController: NavController
     ) {
         this.exercise = exercise
-        performExerciseUseCase.initExercise(context, exercise.id, true)
+        val existingExercise = Exercises.get(context, exercise.id)
+        performExerciseUseCase.evaluateExercise.homeExercise = existingExercise ?: GeneralExercise(
+            context = context, exerciseId = exercise.id, active = true
+        )
         fetchExerciseConstraints(tenant, context, navController)
-        performExerciseUseCase.setExerciseDetails(
+        performExerciseUseCase.evaluateExercise.homeExercise.setExercise(
             exerciseName = exercise.name,
             exerciseInstruction = "",
             exerciseImageUrls = listOf(),
@@ -301,11 +307,11 @@ class ExerciseScreenViewModel @Inject constructor(
                         is Resource.Success -> {
                             it.data?.let { phases ->
                                 exercise.phases = phases
-                                performExerciseUseCase.setConsideredIndices(phases)
-                                homeExercise.rightCountPhases =
+                                performExerciseUseCase.evaluateExercise.homeExercise.setConsideredIndices(phases)
+                                performExerciseUseCase.evaluateExercise.homeExercise.rightCountPhases =
                                     phases.sortedBy { it -> it.id } as MutableList<Phase>
-                                homeExercise.rightCountPhases =
-                                    homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList())
+                                performExerciseUseCase.evaluateExercise.homeExercise.rightCountPhases =
+                                    performExerciseUseCase.evaluateExercise.homeExercise.sortedPhaseList(performExerciseUseCase.evaluateExercise.homeExercise.rightCountPhases.toList())
                                         .toMutableList()
 
                             }
