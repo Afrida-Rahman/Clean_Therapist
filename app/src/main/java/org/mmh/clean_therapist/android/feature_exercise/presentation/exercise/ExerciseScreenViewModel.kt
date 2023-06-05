@@ -29,10 +29,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
+import org.mmh.clean_therapist.android.feature_exercise.domain.model.ExerciseInfo
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Phase
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.Exercises
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home.GeneralExercise
-import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.home.HomeExercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.PoseDetectorProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
@@ -46,9 +46,6 @@ class ExerciseScreenViewModel @Inject constructor(
     private val exerciseUseCases: ExerciseUseCases,
     private val performExerciseUseCase: PerformExerciseUseCase
 ) : ViewModel() {
-
-    private lateinit var exercise: Exercise
-    lateinit var homeExercise: HomeExercise
 
     private val _showPauseBtn = MutableLiveData(true)
     val showPauseBtn: LiveData<Boolean> = _showPauseBtn
@@ -115,7 +112,57 @@ class ExerciseScreenViewModel @Inject constructor(
     fun bindAllCameraUseCases(context: Context, lifecycleOwner: LifecycleOwner) {
         if (cameraProvider != null) {
             cameraProvider!!.unbindAll()
-            performExerciseUseCase.evaluateExercise()
+
+            viewModelScope.launch {
+                performExerciseUseCase.evaluateExercise()
+                    .onEach {
+                        when (it) {
+                            is Resource.Error -> {
+                                Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                            }
+                            is Resource.Success -> {
+                                if (!showCongrats.value!!) {
+                                    _showCongrats.value = !showCongrats.value!!
+                                }
+                            }
+                            is Resource.Loading -> {
+                                it.data.let { exerciseInfo: ExerciseInfo? ->
+                                    if (exerciseInfo != null) {
+                                        countDisplay.text = "%d/%d".format(
+                                            exerciseInfo.repetitionCount, exerciseInfo.setCount
+                                        )
+                                        maxHoldTimeDisplay.text =
+                                            "%d".format(exerciseInfo.maxHoldTime)
+                                        exerciseProgressBar.progress =
+                                            exerciseInfo.setCount * exerciseInfo.maxRepCount + exerciseInfo.repetitionCount
+                                        wrongCountDisplay.text =
+                                            "%d".format(exerciseInfo.wrongCount)
+                                        if (::phaseDialogueDisplay.isInitialized) {
+                                            if (exerciseInfo.dialogue != null) {
+                                                distanceDisplay.text =
+                                                    "%.1f".format(exerciseInfo.distance)
+                                                if (exerciseInfo.distance <= 5f) {
+                                                    phaseDialogueDisplay.textSize = 30f
+                                                } else if (5f < exerciseInfo.distance && exerciseInfo.distance <= 10f) {
+                                                    phaseDialogueDisplay.textSize = 50f
+                                                } else {
+                                                    phaseDialogueDisplay.textSize = 70f
+                                                }
+                                                phaseDialogueDisplay.visibility = View.VISIBLE
+                                                phaseDialogueDisplay.text =
+                                                    "%s".format(exerciseInfo.dialogue)
+                                            } else {
+                                                if (::phaseDialogueDisplay.isInitialized)
+                                                    phaseDialogueDisplay.visibility = View.GONE
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }.launchIn(this)
+            }
+
             bindPreviewUseCase(context, lifecycleOwner)
             bindAnalysisUseCase(context, lifecycleOwner)
         }
@@ -274,7 +321,7 @@ class ExerciseScreenViewModel @Inject constructor(
         exercise: Exercise,
         navController: NavController
     ) {
-        this.exercise = exercise
+        performExerciseUseCase.evaluateExercise.exercise = exercise
         val existingExercise = Exercises.get(context, exercise.id)
         performExerciseUseCase.evaluateExercise.homeExercise = existingExercise ?: GeneralExercise(
             context = context, exerciseId = exercise.id, active = true
@@ -297,7 +344,10 @@ class ExerciseScreenViewModel @Inject constructor(
         navController: NavController
     ) {
         viewModelScope.launch {
-            exerciseUseCases.fetchExerciseConstraints(tenant = tenant, exerciseId = exercise.id)
+            exerciseUseCases.fetchExerciseConstraints(
+                tenant = tenant,
+                exerciseId = performExerciseUseCase.evaluateExercise.exercise.id
+            )
                 .onEach {
                     when (it) {
                         is Resource.Error -> {
@@ -306,12 +356,16 @@ class ExerciseScreenViewModel @Inject constructor(
                         }
                         is Resource.Success -> {
                             it.data?.let { phases ->
-                                exercise.phases = phases
-                                performExerciseUseCase.evaluateExercise.homeExercise.setConsideredIndices(phases)
+                                performExerciseUseCase.evaluateExercise.exercise.phases = phases
+                                performExerciseUseCase.evaluateExercise.homeExercise.setConsideredIndices(
+                                    phases
+                                )
                                 performExerciseUseCase.evaluateExercise.homeExercise.rightCountPhases =
                                     phases.sortedBy { it -> it.id } as MutableList<Phase>
                                 performExerciseUseCase.evaluateExercise.homeExercise.rightCountPhases =
-                                    performExerciseUseCase.evaluateExercise.homeExercise.sortedPhaseList(performExerciseUseCase.evaluateExercise.homeExercise.rightCountPhases.toList())
+                                    performExerciseUseCase.evaluateExercise.homeExercise.sortedPhaseList(
+                                        performExerciseUseCase.evaluateExercise.homeExercise.rightCountPhases.toList()
+                                    )
                                         .toMutableList()
 
                             }
