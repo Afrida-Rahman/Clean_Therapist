@@ -41,7 +41,7 @@ fun ExerciseScreen(
     viewModel: ExerciseScreenViewModel = hiltViewModel()
 ) {
     val showPauseBtn: Boolean by viewModel.showPauseBtn.observeAsState(initial = true)
-    val showCongrats: Boolean by viewModel.showCongrats.observeAsState(initial = false)
+    val showCongrats: Boolean by viewModel.exerciseAnalyzer.showCongrats.observeAsState(initial = false)
     val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
 
@@ -76,22 +76,22 @@ fun ExerciseScreen(
     },
         modifier = Modifier.fillMaxSize(),
         update = {
-            viewModel.previewView = it.findViewById(R.id.preview_view)
-            viewModel.countDisplay = it.findViewById(R.id.right_count)
-            viewModel.maxHoldTimeDisplay = it.findViewById(R.id.max_hold_time_display)
-            viewModel.wrongCountDisplay = it.findViewById(R.id.wrong_count)
-            viewModel.graphicOverlay = it.findViewById(R.id.graphic_overlay)
-            viewModel.distanceDisplay = it.findViewById(R.id.distance)
-            viewModel.phaseDialogueDisplay = it.findViewById(R.id.phase_dialogue)
-            viewModel.exerciseProgressBar = it.findViewById(R.id.exercise_progress)
+            viewModel.exerciseAnalyzer.previewView = it.findViewById(R.id.preview_view)
+            viewModel.exerciseAnalyzer.countDisplay = it.findViewById(R.id.right_count)
+            viewModel.exerciseAnalyzer.maxHoldTimeDisplay = it.findViewById(R.id.max_hold_time_display)
+            viewModel.exerciseAnalyzer.wrongCountDisplay = it.findViewById(R.id.wrong_count)
+            viewModel.exerciseAnalyzer.graphicOverlay = it.findViewById(R.id.graphic_overlay)
+            viewModel.exerciseAnalyzer.distanceDisplay = it.findViewById(R.id.distance)
+            viewModel.exerciseAnalyzer.phaseDialogueDisplay = it.findViewById(R.id.phase_dialogue)
+            viewModel.exerciseAnalyzer.exerciseProgressBar = it.findViewById(R.id.exercise_progress)
             pauseButton = it.findViewById(R.id.btn_pause)
             resumeButton = it.findViewById(R.id.btn_resume)
             pauseIndicator = it.findViewById(R.id.pause_indicator)
-            viewModel.exerciseProgressBar.max =
-                viewModel.homeExercise.maxRepCount * viewModel.homeExercise.maxSetCount
+            viewModel.exerciseAnalyzer.exerciseProgressBar.max =
+                viewModel.exerciseAnalyzer.homeExercise.maxRepCount * viewModel.exerciseAnalyzer.homeExercise.maxSetCount
 
-            viewModel.cameraSelector =
-                CameraSelector.Builder().requireLensFacing(viewModel.lensFacing).build()
+            viewModel.exerciseAnalyzer.cameraSelector =
+                CameraSelector.Builder().requireLensFacing(viewModel.exerciseAnalyzer.lensFacing).build()
             ViewModelProvider(
                 navController.getViewModelStoreOwner(navGraphId = navController.graph.id),
                 ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -100,18 +100,18 @@ fun ExerciseScreen(
                 .observe(
                     lifecycleOwner
                 ) { provider: ProcessCameraProvider? ->
-                    viewModel.cameraProvider = provider
+                    viewModel.exerciseAnalyzer.cameraProvider = provider
                     viewModel.bindAllCameraUseCases(context, lifecycleOwner)
                 }
             val exerciseNameTV: TextView = it.findViewById(R.id.exercise_name)
             exerciseNameTV.text = exercise.name
             it.findViewById<ImageButton>(R.id.camera_switch_button)
                 .setOnClickListener {
-                    if (viewModel.cameraProvider == null) {
+                    if (viewModel.exerciseAnalyzer.cameraProvider == null) {
                         return@setOnClickListener
                     }
                     val newLensFacing: Int =
-                        if (viewModel.lensFacing == CameraSelector.LENS_FACING_FRONT) {
+                        if (viewModel.exerciseAnalyzer.lensFacing == CameraSelector.LENS_FACING_FRONT) {
                             CameraSelector.LENS_FACING_BACK
                         } else {
                             CameraSelector.LENS_FACING_FRONT
@@ -119,9 +119,9 @@ fun ExerciseScreen(
                     val newCameraSelector =
                         CameraSelector.Builder().requireLensFacing(newLensFacing).build()
                     try {
-                        if (viewModel.cameraProvider!!.hasCamera(newCameraSelector)) {
-                            viewModel.lensFacing = newLensFacing
-                            viewModel.cameraSelector = newCameraSelector
+                        if (viewModel.exerciseAnalyzer.cameraProvider!!.hasCamera(newCameraSelector)) {
+                            viewModel.exerciseAnalyzer.lensFacing = newLensFacing
+                            viewModel.exerciseAnalyzer.cameraSelector = newCameraSelector
                             viewModel.bindAllCameraUseCases(context, lifecycleOwner)
                             return@setOnClickListener
                         }
@@ -141,14 +141,14 @@ fun ExerciseScreen(
                 pauseButton?.visibility = View.GONE
                 resumeButton?.visibility = View.VISIBLE
                 pauseIndicator?.visibility = View.VISIBLE
-                viewModel.homeExercise.pauseExercise()
+                viewModel.exerciseAnalyzer.homeExercise.pauseExercise()
 //                viewModel.onEvent(ExerciseEvent.PauseResumeExercise)
             }
             resumeButton?.setOnClickListener {
                 resumeButton?.visibility = View.GONE
                 pauseIndicator?.visibility = View.GONE
                 pauseButton?.visibility = View.VISIBLE
-                viewModel.homeExercise.resumeExercise()
+                viewModel.exerciseAnalyzer.homeExercise.resumeExercise()
             }
 
         }
