@@ -2,7 +2,11 @@ package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise
 
 import android.app.Application
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraInfoUnavailableException
@@ -13,8 +17,13 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -34,20 +43,18 @@ import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.c
 @Composable
 fun ExerciseScreen(
     tenant: String,
-    testId: String,
     exercise: Exercise,
     navController: NavController,
     commonViewModel: CommonViewModel,
     viewModel: ExerciseScreenViewModel = hiltViewModel()
 ) {
-    val showPauseBtn: Boolean by viewModel.showPauseBtn.observeAsState(initial = true)
     val showCongrats: Boolean by viewModel.exerciseAnalyzer.showCongrats.observeAsState(initial = false)
     val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
 
-    var pauseButton: Button? = null
-    var resumeButton: Button? = null
-    var pauseIndicator: ImageView? = null
+    var pauseButton: Button?
+    var resumeButton: Button?
+    var pauseIndicator: ImageView?
 
     viewModel.setExerciseConstraints(context, tenant, exercise, navController)
 
@@ -78,7 +85,8 @@ fun ExerciseScreen(
         update = {
             viewModel.exerciseAnalyzer.previewView = it.findViewById(R.id.preview_view)
             viewModel.exerciseAnalyzer.countDisplay = it.findViewById(R.id.right_count)
-            viewModel.exerciseAnalyzer.maxHoldTimeDisplay = it.findViewById(R.id.max_hold_time_display)
+            viewModel.exerciseAnalyzer.maxHoldTimeDisplay =
+                it.findViewById(R.id.max_hold_time_display)
             viewModel.exerciseAnalyzer.wrongCountDisplay = it.findViewById(R.id.wrong_count)
             viewModel.exerciseAnalyzer.graphicOverlay = it.findViewById(R.id.graphic_overlay)
             viewModel.exerciseAnalyzer.distanceDisplay = it.findViewById(R.id.distance)
@@ -91,7 +99,8 @@ fun ExerciseScreen(
                 viewModel.exerciseAnalyzer.homeExercise.maxRepCount * viewModel.exerciseAnalyzer.homeExercise.maxSetCount
 
             viewModel.exerciseAnalyzer.cameraSelector =
-                CameraSelector.Builder().requireLensFacing(viewModel.exerciseAnalyzer.lensFacing).build()
+                CameraSelector.Builder().requireLensFacing(viewModel.exerciseAnalyzer.lensFacing)
+                    .build()
             ViewModelProvider(
                 navController.getViewModelStoreOwner(navGraphId = navController.graph.id),
                 ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -186,6 +195,7 @@ fun ExerciseScreen(
                 is UIEvent.ShowSnackBar -> {
                     scaffoldState.snackbarHostState.showSnackbar(event.message)
                 }
+
                 is UIEvent.ShowToastMessage -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
                 }
@@ -216,7 +226,8 @@ fun Alert(urls: List<String>, showDialog: Boolean, onDismiss: () -> Unit) {
 fun ShowCongrats(onDismiss: () -> Unit) {
     AlertDialog(
         text = {
-            Text(text = "Congratulations! You have successfully completed the exercise. Please be prepared for the next one.",
+            Text(
+                text = "Congratulations! You have successfully completed the exercise. Please be prepared for the next one.",
                 color = colorResource(id = R.color.black)
             )
         },

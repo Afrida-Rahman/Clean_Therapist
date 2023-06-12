@@ -99,11 +99,10 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
         ) {
             commonViewModel = hiltViewModel()
             it.arguments?.getString("tenant")?.let { tenant ->
-                it.arguments?.getString("testId")?.let { testId ->
+                it.arguments?.getString("testId")?.let { _ ->
                     it.arguments?.getString("exercise")?.let { exercise ->
                         ExerciseScreen(
                             tenant = tenant,
-                            testId = testId,
                             exercise = exercise.replace("\$\$\$", "/")
                                 .fromJson(Exercise::class.java),
                             navController = navController,

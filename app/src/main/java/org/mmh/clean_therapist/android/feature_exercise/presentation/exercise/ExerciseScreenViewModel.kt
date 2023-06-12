@@ -4,7 +4,9 @@ import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -13,9 +15,9 @@ import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.ExerciseUseCases
-import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.Exercise.ExerciseAnalyzer
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.Permission.GetCameraPermissions
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.Permission.isCameraPermissionsGranted
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.exercise.ExerciseAnalyzer
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,14 +26,11 @@ class ExerciseScreenViewModel @Inject constructor(
 ) : ViewModel() {
 
     var exerciseAnalyzer = ExerciseAnalyzer()
-    private val _showPauseBtn = MutableLiveData(true)
-    val showPauseBtn: LiveData<Boolean> = _showPauseBtn
-
 
     @Composable
     fun CheckAndGetPermission(
-        context: Context,
-        launcher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
+        context: Context, launcher: ManagedActivityResultLauncher<Array<String>,
+                Map<String, @JvmSuppressWildcards Boolean>>
     ) {
         if (!isCameraPermissionsGranted(context)) {
             GetCameraPermissions(launcher)
@@ -39,9 +38,7 @@ class ExerciseScreenViewModel @Inject constructor(
     }
 
     fun bindAllCameraUseCases(context: Context, lifecycleOwner: LifecycleOwner) {
-
         exerciseAnalyzer.buildExerciseAnalyzer(context = context, lifecycleOwner = lifecycleOwner)
-
     }
 
     fun setExerciseConstraints(
@@ -70,11 +67,14 @@ class ExerciseScreenViewModel @Inject constructor(
                         Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
                     }
+
                     is Resource.Success -> {
                         it.data?.let { phases ->
                             exerciseAnalyzer.updateExerciseConstraints(phases)
                         }
                     }
+
+                    else -> {}
                 }
             }.launchIn(this)
         }

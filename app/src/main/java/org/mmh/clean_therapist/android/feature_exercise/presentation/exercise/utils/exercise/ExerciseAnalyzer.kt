@@ -1,11 +1,9 @@
-package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.Exercise
+package org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.exercise
 
-import android.content.ContentValues
 import android.content.Context
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -29,7 +27,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.ho
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.PreferenceUtils
-import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.BindUseCase
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.BindUseCase.bindAnalysisUseCase
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.BindUseCase.bindPreviewUseCase
 
 class ExerciseAnalyzer {
@@ -74,39 +72,27 @@ class ExerciseAnalyzer {
                     homeExercise.setFocalLength(characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS))
                 }
             } catch (_: CameraAccessException) {
-
             }
             val builder = ImageAnalysis.Builder()
             val targetResolution = PreferenceUtils.getCameraXTargetResolution(context, lensFacing)
-            if (targetResolution != null) {
-                builder.setTargetResolution(targetResolution)
-            }
+            if (targetResolution != null) builder.setTargetResolution(targetResolution)
+
             needUpdateGraphicOverlayImageSourceInfo = true
-            var newAnalysisUseCase: ImageAnalysis = builder.build()
+            val newAnalysisUseCase: ImageAnalysis = builder.build()
             newAnalysisUseCase.setAnalyzer(
                 ContextCompat.getMainExecutor(context)
             ) { imageProxy: ImageProxy ->
-                Log.d(ContentValues.TAG, "bindAllCameraUseCases: here555")
                 if ((homeExercise.getSetCount() >= homeExercise.maxSetCount) && !showCongrats.value!!) {
                     _showCongrats.value = !showCongrats.value!!
                 }
                 if (needUpdateGraphicOverlayImageSourceInfo) {
                     val isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT
                     homeExercise.setImageFlipped(isImageFlipped)
-                    val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-                    if (rotationDegrees == 0 || rotationDegrees == 180) {
-                        graphicOverlay!!.setImageSourceInfo(
-                            imageProxy.width,
-                            imageProxy.height,
-                            isImageFlipped
-                        )
-                    } else {
-                        graphicOverlay!!.setImageSourceInfo(
-                            imageProxy.height,
-                            imageProxy.width,
-                            isImageFlipped
-                        )
-                    }
+                    graphicOverlay!!.setImageSourceInfo(
+                        imageProxy.width,
+                        imageProxy.height,
+                        isImageFlipped
+                    )
                     needUpdateGraphicOverlayImageSourceInfo = false
                 }
                 try {
@@ -114,14 +100,7 @@ class ExerciseAnalyzer {
                     imageProcessor!!.processImageProxy(imageProxy, graphicOverlay).let { person ->
                         if (person != null && homeExercise.rightCountPhases.size != 0 && person.keyPoints.isNotEmpty()) {
                             homeExercise.rightExerciseCount(
-                                person,
-                                imageProxy.height,
-                                imageProxy.width
-                            )
-                            homeExercise.wrongExerciseCount(
-                                person,
-                                imageProxy.height,
-                                imageProxy.width
+                                person, imageProxy.height, imageProxy.width
                             )
                             countDisplay.text = "%d/%d".format(
                                 homeExercise.getRepetitionCount(), homeExercise.getSetCount()
@@ -137,23 +116,16 @@ class ExerciseAnalyzer {
                                     if (dialogue.isNotEmpty()) {
                                         homeExercise.getPersonDistance(person).let { distance ->
                                             distanceDisplay.text = "%.1f".format(distance)
-                                            if (distance <= 5f) {
-                                                phaseDialogueDisplay.textSize = 30f
-                                            } else if (5f < distance && distance <= 10f) {
-                                                phaseDialogueDisplay.textSize = 50f
-                                            } else {
-                                                phaseDialogueDisplay.textSize = 70f
-                                            }
+                                            phaseDialogueDisplay.textSize =
+                                                Dialogue(distance).updateTextSize()
                                         }
                                         phaseDialogueDisplay.visibility = View.VISIBLE
                                         phaseDialogueDisplay.text =
                                             "%s".format(dialogue)
-
                                     } else {
                                         phaseDialogueDisplay.visibility = View.GONE
                                     }
                                 }
-
                             }
                         }
                     }
@@ -163,22 +135,12 @@ class ExerciseAnalyzer {
                 }
             }
             bindPreviewUseCase(
-                context,
-                lifecycleOwner,
-                cameraProvider,
-                previewUseCase,
-                previewView,
-                cameraSelector,
-                lensFacing
+                context, lifecycleOwner, cameraProvider, previewUseCase,
+                previewView, cameraSelector, lensFacing
             )
-            imageProcessor = BindUseCase.bindAnalysisUseCase(
-                context,
-                lifecycleOwner,
-                cameraProvider,
-                cameraSelector,
-                lensFacing,
-                newAnalysisUseCase,
-                imageProcessor
+            imageProcessor = bindAnalysisUseCase(
+                context, lifecycleOwner, cameraProvider, cameraSelector, lensFacing,
+                newAnalysisUseCase, imageProcessor
             )
         }
     }
@@ -205,14 +167,9 @@ class ExerciseAnalyzer {
 
     fun updateExerciseConstraints(phases: List<Phase>) {
         exercise.phases = phases
-        homeExercise.setConsideredIndices(
-            phases
-        )
+        homeExercise.setConsideredIndices(phases)
+        homeExercise.rightCountPhases = phases.sortedBy { it.id } as MutableList<Phase>
         homeExercise.rightCountPhases =
-            phases.sortedBy { it -> it.id } as MutableList<Phase>
-        homeExercise.rightCountPhases =
-            homeExercise.sortedPhaseList(
-                homeExercise.rightCountPhases.toList()
-            ).toMutableList()
+            homeExercise.sortedPhaseList(homeExercise.rightCountPhases.toList()).toMutableList()
     }
 }
