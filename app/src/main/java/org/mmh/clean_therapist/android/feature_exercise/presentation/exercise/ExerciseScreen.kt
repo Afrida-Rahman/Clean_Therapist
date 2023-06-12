@@ -6,20 +6,14 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraInfoUnavailableException
 import androidx.camera.core.CameraSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -35,17 +28,14 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import org.mmh.clean_therapist.R
-import org.mmh.clean_therapist.android.core.UIEvent
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
-import org.mmh.clean_therapist.android.feature_exercise.presentation.CommonViewModel
-import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.component.ImageSection
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.components.AlertBox
 
 @Composable
 fun ExerciseScreen(
     tenant: String,
     exercise: Exercise,
     navController: NavController,
-    commonViewModel: CommonViewModel,
     viewModel: ExerciseScreenViewModel = hiltViewModel()
 ) {
     val showCongrats: Boolean by viewModel.exerciseAnalyzer.showCongrats.observeAsState(initial = false)
@@ -71,11 +61,9 @@ fun ExerciseScreen(
 
     viewModel.CheckAndGetPermission(context, launcher)
 
-    val scaffoldState = rememberScaffoldState()
-
     if (showDialog.value) {
-        Alert(urls = exercise.imageURLs,
-            showDialog = showDialog.value,
+        AlertBox(imageUrls = exercise.imageURLs,
+            showGuideline = showDialog.value,
             onDismiss = { showDialog.value = false })
     }
     AndroidView(factory = {
@@ -134,15 +122,8 @@ fun ExerciseScreen(
                             viewModel.bindAllCameraUseCases(context, lifecycleOwner)
                             return@setOnClickListener
                         }
-                    } catch (e: CameraInfoUnavailableException) {
-                        // Falls through
+                    } catch (_: CameraInfoUnavailableException) {
                     }
-                    Toast.makeText(
-                        context,
-                        "This device does not have lens with facing: $newLensFacing",
-                        Toast.LENGTH_SHORT
-                    )
-                        .show()
                 }
             it.findViewById<ImageButton>(R.id.btn_gif_display)
                 .setOnClickListener { showDialog.value = true }
@@ -151,7 +132,6 @@ fun ExerciseScreen(
                 resumeButton?.visibility = View.VISIBLE
                 pauseIndicator?.visibility = View.VISIBLE
                 viewModel.exerciseAnalyzer.homeExercise.pauseExercise()
-//                viewModel.onEvent(ExerciseEvent.PauseResumeExercise)
             }
             resumeButton?.setOnClickListener {
                 resumeButton?.visibility = View.GONE
@@ -159,20 +139,11 @@ fun ExerciseScreen(
                 pauseButton?.visibility = View.VISIBLE
                 viewModel.exerciseAnalyzer.homeExercise.resumeExercise()
             }
-
         }
     )
     if (showCongrats) {
-        ShowCongrats(onDismiss = {
-            navController.popBackStack()
-        })
+        AlertBox(onDismiss = { navController.popBackStack() })
     }
-//
-//    if (showResumeBtn){
-//        "Resume".also { pauseButton?.text = it }
-//        viewModel.homeExercise.pauseExercise()
-//    }
-
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -186,57 +157,5 @@ fun ExerciseScreen(
             viewModel.onDestroy()
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
-
     }
-    LaunchedEffect(key1 = true) {
-
-        commonViewModel.eventFlow.collect { event ->
-            when (event) {
-                is UIEvent.ShowSnackBar -> {
-                    scaffoldState.snackbarHostState.showSnackbar(event.message)
-                }
-
-                is UIEvent.ShowToastMessage -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun Alert(urls: List<String>, showDialog: Boolean, onDismiss: () -> Unit) {
-    if (showDialog) {
-        AlertDialog(
-            text = {
-                ImageSection(urls)
-            },
-            onDismissRequest = onDismiss,
-            confirmButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {}
-        )
-    }
-}
-
-@Composable
-fun ShowCongrats(onDismiss: () -> Unit) {
-    AlertDialog(
-        text = {
-            Text(
-                text = "Congratulations! You have successfully completed the exercise. Please be prepared for the next one.",
-                color = colorResource(id = R.color.black)
-            )
-        },
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Ok")
-            }
-        },
-        dismissButton = {}
-    )
 }

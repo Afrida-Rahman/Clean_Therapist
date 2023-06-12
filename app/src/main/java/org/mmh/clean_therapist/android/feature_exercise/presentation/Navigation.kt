@@ -17,7 +17,6 @@ import org.mmh.clean_therapist.android.feature_exercise.presentation.guideline.G
 
 @OptIn(ExperimentalFoundationApi::class)
 fun NavGraphBuilder.exerciseNav(navController: NavController) {
-    lateinit var commonViewModel: CommonViewModel
     lateinit var exerciseListViewModel: ExerciseListViewModel
     lateinit var assessmentListViewModel: AssessmentListViewModel
 
@@ -97,7 +96,6 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                 }
             )
         ) {
-            commonViewModel = hiltViewModel()
             it.arguments?.getString("tenant")?.let { tenant ->
                 it.arguments?.getString("testId")?.let { _ ->
                     it.arguments?.getString("exercise")?.let { exercise ->
@@ -106,7 +104,6 @@ fun NavGraphBuilder.exerciseNav(navController: NavController) {
                             exercise = exercise.replace("\$\$\$", "/")
                                 .fromJson(Exercise::class.java),
                             navController = navController,
-                            commonViewModel = commonViewModel
                         )
                     }
                 }
