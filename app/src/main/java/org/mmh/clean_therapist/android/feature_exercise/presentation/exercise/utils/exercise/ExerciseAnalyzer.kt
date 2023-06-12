@@ -38,8 +38,8 @@ class ExerciseAnalyzer {
     val showCongrats: LiveData<Boolean> = _showCongrats
 
     var cameraProvider: ProcessCameraProvider? = null
-    private var previewUseCase: Preview? = null
-    private var analysisUseCase: ImageAnalysis? = null
+    var previewUseCase: Preview? = null
+    var analysisUseCase: ImageAnalysis? = null
     var imageProcessor: VisionImageProcessor? = null
     var lensFacing = CameraSelector.LENS_FACING_BACK
     var cameraSelector: CameraSelector? = null
@@ -57,8 +57,7 @@ class ExerciseAnalyzer {
     var graphicOverlay: GraphicOverlay? = null
 
     fun buildExerciseAnalyzer(
-        context: Context,
-        lifecycleOwner: LifecycleOwner
+        context: Context
     ) {
         if (cameraProvider != null) {
             cameraProvider!!.unbindAll()
@@ -78,8 +77,8 @@ class ExerciseAnalyzer {
             if (targetResolution != null) builder.setTargetResolution(targetResolution)
 
             needUpdateGraphicOverlayImageSourceInfo = true
-            val newAnalysisUseCase: ImageAnalysis = builder.build()
-            newAnalysisUseCase.setAnalyzer(
+            analysisUseCase = builder.build()
+            analysisUseCase!!.setAnalyzer(
                 ContextCompat.getMainExecutor(context)
             ) { imageProxy: ImageProxy ->
                 if ((homeExercise.getSetCount() >= homeExercise.maxSetCount) && !showCongrats.value!!) {
@@ -117,7 +116,7 @@ class ExerciseAnalyzer {
                                         homeExercise.getPersonDistance(person).let { distance ->
                                             distanceDisplay.text = "%.1f".format(distance)
                                             phaseDialogueDisplay.textSize =
-                                                Dialogue(distance).updateTextSize()
+                                                Dialogue(distance = distance).updateTextSize()
                                         }
                                         phaseDialogueDisplay.visibility = View.VISIBLE
                                         phaseDialogueDisplay.text =
@@ -134,14 +133,6 @@ class ExerciseAnalyzer {
                         .show()
                 }
             }
-            bindPreviewUseCase(
-                context, lifecycleOwner, cameraProvider, previewUseCase,
-                previewView, cameraSelector, lensFacing
-            )
-            imageProcessor = bindAnalysisUseCase(
-                context, lifecycleOwner, cameraProvider, cameraSelector, lensFacing,
-                newAnalysisUseCase, imageProcessor
-            )
         }
     }
 

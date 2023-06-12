@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.mmh.clean_therapist.android.core.Resource
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.Exercise
 import org.mmh.clean_therapist.android.feature_exercise.domain.usecase.networkData.ExerciseUseCases
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.BindUseCase
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.Permission.GetCameraPermissions
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.Permission.isCameraPermissionsGranted
 import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.exercise.ExerciseAnalyzer
@@ -38,7 +39,15 @@ class ExerciseScreenViewModel @Inject constructor(
     }
 
     fun bindAllCameraUseCases(context: Context, lifecycleOwner: LifecycleOwner) {
-        exerciseAnalyzer.buildExerciseAnalyzer(context = context, lifecycleOwner = lifecycleOwner)
+        exerciseAnalyzer.buildExerciseAnalyzer(context = context)
+        BindUseCase.bindPreviewUseCase(
+            context, lifecycleOwner, exerciseAnalyzer.cameraProvider, exerciseAnalyzer.previewUseCase,
+            exerciseAnalyzer.previewView, exerciseAnalyzer.cameraSelector, exerciseAnalyzer.lensFacing
+        )
+        exerciseAnalyzer.imageProcessor = BindUseCase.bindAnalysisUseCase(
+            context, lifecycleOwner, exerciseAnalyzer.cameraProvider, exerciseAnalyzer.cameraSelector, exerciseAnalyzer.lensFacing,
+            exerciseAnalyzer.analysisUseCase, exerciseAnalyzer.imageProcessor
+        )
     }
 
     fun setExerciseConstraints(
