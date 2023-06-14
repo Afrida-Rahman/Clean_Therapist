@@ -15,7 +15,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.mlkit.common.MlKitException
@@ -27,8 +26,6 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.exercise.ho
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.GraphicOverlay
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.ml_kit.VisionImageProcessor
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.PreferenceUtils
-import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.BindUseCase.bindAnalysisUseCase
-import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.camera.BindUseCase.bindPreviewUseCase
 
 class ExerciseAnalyzer {
     lateinit var exercise: Exercise
@@ -49,6 +46,7 @@ class ExerciseAnalyzer {
     lateinit var wrongCountDisplay: TextView
     lateinit var distanceDisplay: TextView
     lateinit var phaseDialogueDisplay: TextView
+    lateinit var timeCountDisplay: TextView
     lateinit var exerciseProgressBar: ProgressBar
 
 
@@ -111,12 +109,16 @@ class ExerciseAnalyzer {
                             wrongCountDisplay.text =
                                 "%d".format(homeExercise.getWrongCount())
                             homeExercise.getPhase()?.let {
+                                val timeToDisplay = homeExercise.getHoldTimeLimitCount()
                                 it.instruction?.let { dialogue ->
                                     if (dialogue.isNotEmpty()) {
                                         homeExercise.getPersonDistance(person).let { distance ->
                                             distanceDisplay.text = "%.1f".format(distance)
-                                            phaseDialogueDisplay.textSize =
-                                                Dialogue(distance = distance).updateTextSize()
+                                            phaseDialogueDisplay.textSize = when {
+                                                distance <= 5f -> 30f
+                                                distance > 5f && distance <= 10f -> 50f
+                                                else -> 70f
+                                            }
                                         }
                                         phaseDialogueDisplay.visibility = View.VISIBLE
                                         phaseDialogueDisplay.text =
@@ -124,6 +126,15 @@ class ExerciseAnalyzer {
                                     } else {
                                         phaseDialogueDisplay.visibility = View.GONE
                                     }
+                                }
+                                if (timeToDisplay > 0) {
+                                    timeCountDisplay.visibility = View.VISIBLE
+                                    timeCountDisplay.text =
+                                        "%d".format(timeToDisplay)
+                                } else {
+                                    timeCountDisplay.visibility = View.GONE
+                                    timeCountDisplay.text =
+                                        "%d".format(0)
                                 }
                             }
                         }
@@ -143,7 +154,7 @@ class ExerciseAnalyzer {
         this.exercise = exercise
         val existingExercise = Exercises.get(context, exercise.id)
         homeExercise = existingExercise ?: GeneralExercise(
-            context = context, exerciseId = exercise.id, active = true
+            context = context, exerciseId = exercise.id
         )
         homeExercise.setExercise(
             exerciseName = exercise.name,

@@ -4,10 +4,8 @@ import android.content.Context
 
 class GeneralExercise(
     context: Context,
-    exerciseId: Int,
-    active: Boolean = false
+    exerciseId: Int
 ) : HomeExercise(
     context = context,
-    id = exerciseId,
-    active = active
+    id = exerciseId
 )

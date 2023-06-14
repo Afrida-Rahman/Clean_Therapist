@@ -80,6 +80,7 @@ fun ExerciseScreen(
             viewModel.exerciseAnalyzer.distanceDisplay = it.findViewById(R.id.distance)
             viewModel.exerciseAnalyzer.phaseDialogueDisplay = it.findViewById(R.id.phase_dialogue)
             viewModel.exerciseAnalyzer.exerciseProgressBar = it.findViewById(R.id.exercise_progress)
+            viewModel.exerciseAnalyzer.timeCountDisplay = it.findViewById(R.id.time_count_display)
             pauseButton = it.findViewById(R.id.btn_pause)
             resumeButton = it.findViewById(R.id.btn_resume)
             pauseIndicator = it.findViewById(R.id.pause_indicator)

@@ -24,11 +24,10 @@ abstract class HomeExercise(
     val id: Int,
     val playPauseCue: Boolean = true,
     var name: String = "",
-    val active: Boolean = true,
-    var protocolId: Int = 0,
+    private var protocolId: Int = 0,
     var instruction: String? = "",
-    var videoUrls: String = "",
-    var imageUrls: List<String> = listOf(),
+    private var videoUrls: String = "",
+    private var imageUrls: List<String> = listOf(),
     var maxRepCount: Int = 0,
     var maxSetCount: Int = 0,
 ) {
@@ -58,9 +57,8 @@ abstract class HomeExercise(
     private var takingRest = false
     private var manuallyPaused = false
     private lateinit var asyncAudioPlayer: AsyncAudioPlayer
-    fun isAsyncAudioPlayerInitialized() = ::asyncAudioPlayer.isInitialized
-    val instructions: MutableList<Instruction> = mutableListOf()
-    var trackIndex: Int = 0
+    private val instructions: MutableList<Instruction> = mutableListOf()
+    private var trackIndex = 0
     private val commonExerciseInstructions = listOf(
         AsyncAudioPlayer.GET_READY,
         AsyncAudioPlayer.START,
@@ -97,7 +95,7 @@ abstract class HomeExercise(
         isImageFlipped = imageFlipped
     }
 
-    fun addInstruction(dialogue: String?) {
+    private fun addInstruction(dialogue: String?) {
         dialogue?.let { text ->
             val doesNotExist = instructions.find {
                 it.text.lowercase() == text.lowercase()
@@ -148,7 +146,7 @@ abstract class HomeExercise(
         }
     }
 
-    fun getMaxHoldTime(): Int = rightCountPhases.map { it.holdTime }.maxOrNull() ?: 0
+    fun getMaxHoldTime(): Int = rightCountPhases.maxOfOrNull { it.holdTime } ?: 0
 
     fun getRepetitionCount() = repetitionCounter
 
@@ -166,8 +164,6 @@ abstract class HomeExercise(
         }
     }
 
-    fun getPhaseSummary(): List<PhaseSummary> = phaseSummary
-
     fun pauseExercise() {
         takingRest = true
         manuallyPaused = true
@@ -178,7 +174,7 @@ abstract class HomeExercise(
         manuallyPaused = false
     }
 
-    fun playInstruction(
+    private fun playInstruction(
         firstDelay: Long,
         firstInstruction: String,
         secondDelay: Long = 0L,
@@ -226,7 +222,7 @@ abstract class HomeExercise(
         focalLengths = lengths
     }
 
-    fun playAudio(@RawRes resource: Int) {
+    private fun playAudio(@RawRes resource: Int) {
         val timestamp = System.currentTimeMillis().toInt()
         if (timestamp - lastTimePlayed >= 3500) {
             lastTimePlayed = timestamp
@@ -309,7 +305,6 @@ abstract class HomeExercise(
         }
     }
 
-    open fun wrongExerciseCount(person: Person, canvasHeight: Int, canvasWidth: Int) {}
 
     open fun exerciseInstruction(person: Person) {}
 
@@ -317,8 +312,8 @@ abstract class HomeExercise(
         val indices = mutableSetOf<Int>()
         var isSatisfied = true
         phase.constraints.forEach {
-            if(it is AngleConstraint) {
-                val angleConstraint = it as AngleConstraint
+            if (it is AngleConstraint) {
+                val angleConstraint = it
                 indices.add(angleConstraint.startPointIndex)
                 indices.add(angleConstraint.middlePointIndex)
                 indices.add(angleConstraint.endPointIndex)
@@ -389,15 +384,14 @@ abstract class HomeExercise(
         }
     }
 
-    fun setNewConstraints() {
+    private fun setNewConstraints() {
         trackIndex = 0
         rightCountPhases.forEach { phase ->
             phase.constraints.forEach { constraint ->
                 val standardValues = constraint.getStandardConstraints()
                 val standardConstraintGap = standardValues.standardMax - standardValues.standardMin
                 val minMaxMedian = constraint.getMinMaxMedian()
-                val refinedConstraintGap = minMaxMedian.max - minMaxMedian.max
-
+                val refinedConstraintGap = minMaxMedian.max - minMaxMedian.min
                 if (minMaxMedian.median < standardValues.standardMin || minMaxMedian.median > standardValues.standardMax) {
                     if (refinedConstraintGap > standardConstraintGap) {
                         val newMin = minMaxMedian.median - (standardConstraintGap / 2)
@@ -415,12 +409,10 @@ abstract class HomeExercise(
                             constraint.setRefinedConstraints(min = newMin, max = newMax)
                         }
                     }
-
                 } else {
                     constraint.setStandardConstraints()
                 }
                 constraint.storedValues.clear()
-
                 restriction.add(
                     Restriction(
                         StartKeyPosition = getIndexName(constraint.startPointIndex),
@@ -430,7 +422,6 @@ abstract class HomeExercise(
                         AverageMin = constraint.lowestMaxValidationValue
                     )
                 )
-
                 phaseSummary.add(
                     PhaseSummary(
                         PhaseNumber = phase.id,
@@ -438,11 +429,8 @@ abstract class HomeExercise(
                     )
                 )
                 restriction.clear()
-
             }
-
         }
-
     }
 
     private fun setCountText(count: Int): String = when (count) {
@@ -462,9 +450,9 @@ abstract class HomeExercise(
     private fun isConstraintSatisfied(person: Person, constraints: List<Constraint>): Boolean {
         var constraintSatisfied = true
         constraints.forEach {
-            if(it is AngleConstraint) {
+            if (it is AngleConstraint) {
                 var direction: Boolean = it.isClockwise
-                if (isImageFlipped){
+                if (isImageFlipped) {
                     direction = !it.isClockwise
                 }
                 val angle = Utilities.angle(
@@ -479,21 +467,8 @@ abstract class HomeExercise(
                     constraintSatisfied = false
                 }
             }
-
         }
         return constraintSatisfied
-    }
-
-    private fun getCurrentPhase(person: Person, phases: List<Phase>): Int {
-        val reversedPhases = phases.sortedBy { it.id }.reversed()
-        var index = phases.size - 2
-        while (index >= 0) {
-            if (isConstraintSatisfied(person, reversedPhases[index].constraints)) {
-                return index
-            }
-            index--
-        }
-        return -1
     }
 
     fun sortedPhaseList(phases: List<Phase>): List<Phase> {
@@ -521,7 +496,7 @@ abstract class HomeExercise(
             ) onEvent(CommonInstructionEvent.OutSideOfBox)
         }
         if (getPersonDistance(person) > MAX_DISTANCE_FROM_CAMERA) {
-//            onEvent(CommonInstructionEvent.TooFarFromCamera)
+            onEvent(CommonInstructionEvent.TooFarFromCamera)
         }
     }
 
@@ -546,7 +521,7 @@ abstract class HomeExercise(
 
     private fun trackMinMaxConstraints(person: Person) {
         rightCountPhases[trackIndex].constraints.forEach {
-            if(it is AngleConstraint) {
+            if (it is AngleConstraint) {
                 val angle = Utilities.angle(
                     startPoint = person.keyPoints[it.startPointIndex].toRealPoint(),
                     middlePoint = person.keyPoints[it.middlePointIndex].toRealPoint(),
