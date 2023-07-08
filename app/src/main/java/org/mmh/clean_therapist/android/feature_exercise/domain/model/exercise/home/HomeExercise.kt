@@ -14,6 +14,7 @@ import org.mmh.clean_therapist.android.feature_exercise.domain.model.*
 import org.mmh.clean_therapist.android.feature_exercise.domain.model.constraint.AngleConstraint
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils
 import org.mmh.clean_therapist.android.feature_exercise.domain.posedetector.utils.VisualUtils.getIndexName
+import org.mmh.clean_therapist.android.feature_exercise.presentation.exercise.utils.Exercise.Instructions
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -47,7 +48,6 @@ abstract class HomeExercise(
     private var repetitionCounter = 0
     private var lastTimePlayed: Int = System.currentTimeMillis().toInt()
     private var focalLengths: FloatArray? = null
-    private var previousCountDown = 0
     private var downTimeCounter = 0
     private var distanceFromCamera = 0f
     private var lastTimeDistanceCalculated = 0L
@@ -56,54 +56,14 @@ abstract class HomeExercise(
     private var phaseEnterTime = System.currentTimeMillis()
     private var takingRest = false
     private var manuallyPaused = false
-    private lateinit var asyncAudioPlayer: AsyncAudioPlayer
-    private val instructions: MutableList<Instruction> = mutableListOf()
     private var trackIndex = 0
-    private val commonExerciseInstructions = listOf(
-        AsyncAudioPlayer.GET_READY,
-        AsyncAudioPlayer.START,
-        AsyncAudioPlayer.START_AGAIN,
-        AsyncAudioPlayer.FINISH,
-        AsyncAudioPlayer.ONE,
-        AsyncAudioPlayer.TWO,
-        AsyncAudioPlayer.THREE,
-        AsyncAudioPlayer.FOUR,
-        AsyncAudioPlayer.FIVE,
-        AsyncAudioPlayer.SIX,
-        AsyncAudioPlayer.SEVEN,
-        AsyncAudioPlayer.EIGHT,
-        AsyncAudioPlayer.NINE,
-        AsyncAudioPlayer.TEN,
-        AsyncAudioPlayer.ELEVEN,
-        AsyncAudioPlayer.TWELVE,
-        AsyncAudioPlayer.THIRTEEN,
-        AsyncAudioPlayer.FOURTEEN,
-        AsyncAudioPlayer.FIFTEEN,
-        AsyncAudioPlayer.SIXTEEN,
-        AsyncAudioPlayer.SEVENTEEN,
-        AsyncAudioPlayer.EIGHTEEN,
-        AsyncAudioPlayer.NINETEEN,
-        AsyncAudioPlayer.TWENTY,
-        AsyncAudioPlayer.BEEP,
-        AsyncAudioPlayer.PAUSE,
-    )
+    private var instructions = Instructions()
 
     private val consideredIndices = mutableSetOf<Int>()
 
     private var isImageFlipped: Boolean = false
     fun setImageFlipped(imageFlipped: Boolean) {
         isImageFlipped = imageFlipped
-    }
-
-    private fun addInstruction(dialogue: String?) {
-        dialogue?.let { text ->
-            val doesNotExist = instructions.find {
-                it.text.lowercase() == text.lowercase()
-            } == null
-            if (doesNotExist) {
-                instructions.add(asyncAudioPlayer.generateInstruction(dialogue))
-            }
-        }
     }
 
     fun setExercise(
@@ -125,24 +85,20 @@ abstract class HomeExercise(
     }
 
     fun setConsideredIndices(phases: List<Phase>) {
-        playInstruction(
+        instructions.playInstruction(
             firstDelay = 5000L,
             firstInstruction = AsyncAudioPlayer.GET_READY,
             secondDelay = 5000L,
             secondInstruction = AsyncAudioPlayer.START,
             shouldTakeRest = true
         )
-        asyncAudioPlayer = AsyncAudioPlayer(context)
-        commonExerciseInstructions.forEach {
-            addInstruction(it)
-        }
+        instructions.init(context, phases)
         for (phase in phases) {
             for (constraint in phase.constraints) {
                 consideredIndices.add(constraint.startPointIndex)
                 consideredIndices.add(constraint.middlePointIndex)
                 consideredIndices.add(constraint.endPointIndex)
             }
-            addInstruction(phase.instruction)
         }
     }
 
@@ -172,26 +128,6 @@ abstract class HomeExercise(
     fun resumeExercise() {
         takingRest = false
         manuallyPaused = false
-    }
-
-    private fun playInstruction(
-        firstDelay: Long,
-        firstInstruction: String,
-        secondDelay: Long = 0L,
-        secondInstruction: String? = null,
-        shouldTakeRest: Boolean = false
-    ) {
-        if (shouldTakeRest) takingRest = true
-        CoroutineScope(Dispatchers.Main).launch {
-            val instruction = getInstruction(firstInstruction)
-            delay(firstDelay)
-            asyncAudioPlayer.playText(instruction)
-            delay(secondDelay)
-            secondInstruction?.let {
-                asyncAudioPlayer.playText(getInstruction(it))
-            }
-            if (shouldTakeRest and !manuallyPaused) takingRest = false
-        }
     }
 
     fun getPersonDistance(person: Person): Float {
@@ -234,7 +170,7 @@ abstract class HomeExercise(
         when (event) {
             is CommonInstructionEvent.OutSideOfBox -> {
 
-                playInstruction(
+                instructions.playInstruction(
                     firstDelay = 0L,
                     firstInstruction = AsyncAudioPlayer.PLEASE_STAY_INSIDE_BOX
                 )
@@ -283,12 +219,12 @@ abstract class HomeExercise(
                         } else {
                             phaseIndex++
                             rightCountPhases[phaseIndex].instruction?.let {
-                                playInstruction(firstDelay = 500L, firstInstruction = it)
+                                instructions.playInstruction(firstDelay = 500L, firstInstruction = it)
                             }
                             downTimeCounter = 0
                         }
                     } else {
-                        if (phaseIndex != 0) countDownAudio(downTimeCounter)
+                        if (phaseIndex != 0) instructions.countDownAudio(downTimeCounter)
                     }
                 } else {
                     downTimeCounter = 0
@@ -328,32 +264,21 @@ abstract class HomeExercise(
         return isSatisfied
     }
 
-    private fun getInstruction(text: String): Instruction {
-        var instruction = instructions.find {
-            it.text.lowercase() == text.lowercase()
-        }
-        if (instruction == null) {
-            instruction = asyncAudioPlayer.generateInstruction(text)
-            instructions.add(instruction)
-        }
-        return instruction
-    }
-
     private fun repetitionCount() {
         repetitionCounter++
         if (repetitionCounter >= maxRepCount) {
             repetitionCounter = 0
             setCounter++
             if (setCounter == maxSetCount) {
-                asyncAudioPlayer.playText(getInstruction(AsyncAudioPlayer.FINISH))
+                instructions.playTextInstruction(instructions.getInstruction(AsyncAudioPlayer.FINISH))
                 CoroutineScope(Dispatchers.Main).launch {
-                    playInstruction(
+                    instructions.playInstruction(
                         firstDelay = 1000L,
                         firstInstruction = AsyncAudioPlayer.CONGRATS
                     )
                 }
             } else {
-                playInstruction(
+                instructions.playInstruction(
                     firstDelay = 0L,
                     firstInstruction = setCountText(setCounter),
                     secondDelay = SET_INTERVAL,
@@ -367,8 +292,8 @@ abstract class HomeExercise(
         } else {
             val phase = rightCountPhases[0]
             if (phase.holdTime > 0) {
-                val repetitionInstruction = getInstruction(repetitionCounter.toString())
-                playInstruction(
+                val repetitionInstruction = instructions.getInstruction(repetitionCounter.toString())
+                instructions.playInstruction(
                     firstDelay = 0L,
                     firstInstruction = repetitionCounter.toString(),
                     secondDelay = repetitionInstruction.player?.duration?.toLong() ?: 500L,
@@ -376,7 +301,7 @@ abstract class HomeExercise(
                     shouldTakeRest = true
                 )
             } else {
-                playInstruction(
+                instructions.playInstruction(
                     firstDelay = 0L,
                     firstInstruction = repetitionCounter.toString()
                 )
@@ -497,17 +422,6 @@ abstract class HomeExercise(
         }
         if (getPersonDistance(person) > MAX_DISTANCE_FROM_CAMERA) {
             onEvent(CommonInstructionEvent.TooFarFromCamera)
-        }
-    }
-
-    private fun countDownAudio(count: Int) {
-        if (previousCountDown != count && count > 0) {
-            previousCountDown = count
-            if (count > 20) {
-                asyncAudioPlayer.playText(getInstruction(AsyncAudioPlayer.BEEP))
-            } else {
-                asyncAudioPlayer.playText(getInstruction(count.toString()))
-            }
         }
     }
 
